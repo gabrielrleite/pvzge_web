@@ -83,16 +83,9 @@
     I.render();
   };
 
-  I.datePicker = function datePicker(p) {
+  // The dates played as a level ("Adventure" in the date planner).
+  I.adventureList = function adventureList(p, sheet) {
     var r = I.partners()[p.code];
-    var sheet = el('div.pvzx-mview.pvzx-dates', null, [
-      el('button.pvzx-x', { text: '←', title: t('close'), onclick: function () {
-        I.view.datePick = null;
-        I.render();
-      } }),
-      el('h3', { text: '💐 ' + L(TXT.dateTitle) }),
-      el('p.pvzx-small', { text: L(TXT.inviteDesc, { name: p.name }) }),
-    ]);
     I.DATE_TYPES.forEach(function (dt) {
       var lock = I.dateLock(dt, r);
       var best = r && r.dates[dt.id];
@@ -113,9 +106,6 @@
           ]),
         ]),
       );
-    });
-    sheet.addEventListener('wheel', function (e) {
-      e.stopPropagation();
     });
     return sheet;
   };
@@ -264,31 +254,7 @@
     dt.obj.forEach(function (o) {
       if (I.OBJ[o].ok(s)) stars++;
     });
-    var ps = I.partners();
-    var fresh = !ps[code];
-    if (fresh) ps[code] = { since: Date.now(), xp: 0, dates: {} };
-    var r = ps[code];
-    var before = fresh ? -1 : I.relStage(r);
-    r.dates[dt.id] = Math.max(r.dates[dt.id] || 0, stars);
-    if (dt.id === 'wedding') r.married = true;
-    I.savePartners(ps);
-    I.later(code, Lp(CHAT.dateWonMsg), 3000 + Math.random() * 5000);
-    I.statEvent(code, 'date');
-    if (fresh) I.statEvent(code, 'partner');
-    if (dt.id === 'wedding') {
-      I.statEvent(code, 'wed');
-      I.unlock(['match_married']);
-    }
-    // xp after the wedding flag: the stage messages come from the change.
-    // A first date starts the relationship (seeing each other) whatever the
-    // stars; later dates add one point per star.
-    I.addXp(code, fresh ? Math.min(stars, 2) : stars + I.loveBonus(code, 'dates'));
-    if (dt.id === 'wedding' && !fresh) I.stageMessages(code, before, 3);
-    X.store.set('matchReveals', I.reveals() + 1);
-    if (stars === 3) {
-      X.store.set('matchSupers', X.store.get('matchSupers', 0) + 1);
-      I.unlock(['match_stars']);
-    }
+    var fresh = I.dateSuccess(code, dt.id, stars, dt.id === 'wedding');
     I.note(L(TXT.dateResult, { icon: dt.icon, date: L(DATES[dt.id].name), stars: I.starsText(stars) }), 'pvzx-good');
     I.note(
       [L(TXT.objWin)]
@@ -300,6 +266,40 @@
       1400,
     );
     if (fresh) I.note(L(TXT.dateWon, { name: name }), 'pvzx-good', 1500);
+  };
+
+  // A date that went well (a level won or a scene with stars): the plant
+  // becomes (or stays) a partner and gets the points. Returns true when the
+  // plant just became a partner.
+  I.dateSuccess = function dateSuccess(code, id, stars, wedding, memory) {
+    var ps = I.partners();
+    var fresh = !ps[code];
+    if (fresh) ps[code] = { since: Date.now(), xp: 0, dates: {} };
+    var r = ps[code];
+    var before = fresh ? -1 : I.relStage(r);
+    r.dates[id] = Math.max(r.dates[id] || 0, stars);
+    if (wedding) r.married = true;
+    if (memory) r.memories = (r.memories || []).concat([memory]).slice(-12);
+    I.savePartners(ps);
+    I.later(code, Lp(CHAT.dateWonMsg), 3000 + Math.random() * 5000);
+    I.statEvent(code, 'date');
+    if (fresh) I.statEvent(code, 'partner');
+    if (wedding) {
+      I.statEvent(code, 'wed');
+      I.unlock(['match_married']);
+    }
+    // xp after the wedding flag: the stage messages come from the change.
+    // A first date starts the relationship (seeing each other) whatever the
+    // stars; later dates add one point per star.
+    I.addXp(code, fresh ? Math.min(stars, 2) : stars + I.loveBonus(code, 'dates'));
+    if (wedding && !fresh) I.stageMessages(code, before, 3);
+    X.store.set('matchReveals', I.reveals() + 1);
+    if (stars === 3) {
+      X.store.set('matchSupers', X.store.get('matchSupers', 0) + 1);
+      I.unlock(['match_stars']);
+    }
+    I.unlock(['match_partner']);
+    return fresh;
   };
 
   I.matchEnded = function matchEnded(cur, s) {

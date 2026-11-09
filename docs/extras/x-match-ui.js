@@ -826,6 +826,7 @@
           var dt = I.DATE_TYPES.find(function (d) {
             return d.id === id;
           });
+          // Scene dates are in the album; this line shows the adventures.
           return dt ? dt.icon + ' ' + I.starsText(r.dates[id]) : '';
         })
         .join('  ');
@@ -835,6 +836,19 @@
           el('div.pvzx-prow-info', null, [
             el('b', { text: p.name }),
             I.relationInfo(r, st),
+            r.memories && r.memories.length
+              ? el('small.pvzx-album', {
+                  text:
+                    '📔 ' +
+                    r.memories
+                      .slice(-6)
+                      .map(function (m) {
+                        var pl = MT.SCENE.places[m.place];
+                        return (pl ? pl.icon : '💐') + '⭐'.repeat(m.stars);
+                      })
+                      .join('  '),
+                })
+              : null,
             el('small', { text: L(TXT.since, { d: new Date(r.since).toLocaleDateString() }) + (dates ? ' · ' + dates : '') }),
             el('div.pvzx-pbtns', null, I.giftButtons(code, r).concat([
               el('button.mp-btn.mp-small.mp-blue', { text: L(TXT.chatBtn), onclick: function () {
@@ -926,7 +940,13 @@
         }),
       ),
     );
-    I.node.replaceChildren(phone);
+    // Replace only the phone: an open date scene (a sibling) keeps running.
+    var old = I.node.querySelector(':scope > .pvzx-phone');
+    if (old) I.node.replaceChild(phone, old);
+    else I.node.insertBefore(phone, I.node.firstChild);
+    Array.prototype.slice.call(I.node.children).forEach(function (c) {
+      if (c !== phone && c !== I.sceneEl) c.remove();
+    });
     if (keep) {
       var again = I.node.querySelector('[data-keep="' + keep + '"]');
       if (again) {
@@ -1040,6 +1060,8 @@
     if (I.cam && I.cam.root.isValid) I.cam.root.destroy();
     I.cam = null;
     I.view.datePick = null;
+    I.scene = null;
+    I.sceneEl = null;
     I.flushStats();
     I.pushState();
   };
