@@ -14,7 +14,7 @@
 
   var MP = window.PvZMP;
   var X = (window.PvZX = new MP.Emitter());
-  X.VERSION = '2.3.0';
+  X.VERSION = '2.5.0';
 
   /* ------------------------------------------------------------ storage */
 

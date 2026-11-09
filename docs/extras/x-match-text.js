@@ -106,7 +106,7 @@
   /* ------------------------------------------------ texts added in 2.0 */
 
   Object.assign(TXT, {
-    inviteDesc: { pt: 'Escolha um encontro: uma fase curta com {name}. Vencendo, vocês começam a namorar.', en: 'Pick a date: a short level with {name}. Win it and you start dating.', zh: '选择约会：与 {name} 一起的短关卡。获胜后你们开始交往。' },
+    inviteDesc: { pt: 'Planeje o encontro com {name}: o lugar, o seu visual e um presente. Se der certo, vocês começam a namorar.', en: 'Plan the date with {name}: the place, your look and a gift. If it goes well, you start dating.', zh: '策划与 {name} 的约会：地点、造型和礼物。顺利的话你们就开始交往。' },
     partnersDesc: { pt: 'Plantas com quem você venceu um encontro. Sempre dão match, trazem bônus quando estão no time e o relacionamento cresce com encontros, presentes e fases jogadas juntos. Cuidado: quem fica de fora das fases sente ciúmes.', en: 'Plants you won a date with. They always match, bring a bonus when they are in your team, and the relationship grows with dates, gifts and levels played together. Careful: partners left out of a level get jealous.', zh: '与你约会获胜的植物。它们总会配对，在队伍中时带来加成，关系会随约会、礼物和一起游玩的关卡成长。注意：没被带上关卡的恋人会吃醋。' },
     newSession: { pt: '— novo match —', en: '— new match —', zh: '— 新的配对 —' },
     personality: { pt: 'Personalidade', en: 'Personality', zh: '性格' },
@@ -486,6 +486,367 @@
     reject: { pt: 'Recusar', en: 'Reject', zh: '拒绝' },
   };
 
+  /* ------------------------------------------------ texts added in 2.4 */
+
+  // Dates as scenes: places, looks, gifts, the script of each place (the
+  // player's choices have a style: romantic, funny, sincere or bold) and the
+  // mini-games.
+  var SCENE = {
+    ui: {
+      planTitle: { pt: 'Planejar o encontro', en: 'Plan the date', zh: '策划约会' },
+      tabScene: { pt: '💐 Encontro', en: '💐 Date', zh: '💐 约会' },
+      tabAdventure: { pt: '⚔️ Aventura (fase)', en: '⚔️ Adventure (level)', zh: '⚔️ 冒险（关卡）' },
+      adventureDesc: { pt: 'Encontros jogados como uma fase curta, com estrelas por objetivos. O casamento é sempre uma aventura.', en: 'Dates played as a short level, with stars for objectives. The wedding is always an adventure.', zh: '以短关卡进行的约会，按目标获得星星。婚礼一直是冒险。' },
+      where: { pt: '1. Onde?', en: '1. Where?', zh: '1. 去哪里？' },
+      look: { pt: '2. Seu visual', en: '2. Your look', zh: '2. 你的造型' },
+      gift: { pt: '3. Presente', en: '3. Gift', zh: '3. 礼物' },
+      noGift: { pt: 'Sem presente', en: 'No gift', zh: '不带礼物' },
+      likes: { pt: 'curtidas', en: 'likes', zh: '喜欢' },
+      hint: { pt: '💡 costuma agradar: {who}', en: '💡 usually liked by: {who}', zh: '💡 通常受欢迎：{who}' },
+      go: { pt: 'Sair para o encontro 💐', en: 'Go on the date 💐', zh: '出发约会 💐' },
+      tired: { pt: '{name} já saiu com você 2 vezes hoje. Tente amanhã! 😴', en: '{name} already went out with you twice today. Try tomorrow! 😴', zh: '{name} 今天已经和你约会两次了，明天再来吧！😴' },
+      notEnough: { pt: 'Curtidas insuficientes para este presente', en: 'Not enough likes for this gift', zh: '喜欢次数不足以购买此礼物' },
+      mood: { pt: 'Clima', en: 'Mood', zh: '气氛' },
+      quit: { pt: 'Ir embora', en: 'Leave', zh: '离开' },
+      quitAsk: { pt: 'Ir embora no meio do encontro? Conta como um encontro que não deu certo.', en: 'Leave in the middle of the date? It counts as a date that didn’t work out.', zh: '约会中途离开？将算作失败的约会。' },
+      next: { pt: 'Continuar', en: 'Continue', zh: '继续' },
+      play: { pt: 'Jogar!', en: 'Play!', zh: '开始！' },
+      score: { pt: 'Pontos: {n}', en: 'Score: {n}', zh: '得分：{n}' },
+      resultTitle: { pt: 'Fim do encontro', en: 'End of the date', zh: '约会结束' },
+      resultFail: { pt: 'Não rolou desta vez... 💔', en: 'It didn’t work out this time... 💔', zh: '这次没成功……💔' },
+      resultOk: { pt: 'Foi um bom encontro! 💕', en: 'It was a good date! 💕', zh: '这是一次不错的约会！💕' },
+      resultGreat: { pt: 'Encontro perfeito! 💖', en: 'Perfect date! 💖', zh: '完美的约会！💖' },
+      back: { pt: 'Voltar', en: 'Back', zh: '返回' },
+      memories: { pt: 'Álbum', en: 'Album', zh: '相册' },
+      you: { pt: 'Você', en: 'You', zh: '你' },
+    },
+    // Highlights in the result.
+    hl: {
+      placeLove: { pt: '{icon} Amou o lugar', en: '{icon} Loved the place', zh: '{icon} 很喜欢这个地方' },
+      placeHate: { pt: '{icon} Não curtiu o lugar', en: '{icon} Didn’t like the place', zh: '{icon} 不喜欢这个地方' },
+      placeOk: { pt: '{icon} Lugar ok', en: '{icon} The place was fine', zh: '{icon} 地方还行' },
+      lookLove: { pt: '{icon} Adorou seu visual', en: '{icon} Loved your look', zh: '{icon} 很喜欢你的造型' },
+      lookHate: { pt: '{icon} Estranhou seu visual', en: '{icon} Found your look odd', zh: '{icon} 觉得你的造型很怪' },
+      giftLove: { pt: '{icon} Presente perfeito', en: '{icon} Perfect gift', zh: '{icon} 完美的礼物' },
+      giftOk: { pt: '{icon} Gostou do presente', en: '{icon} Liked the gift', zh: '{icon} 喜欢这份礼物' },
+      giftNone: { pt: '🎁 Esperava um presente...', en: '🎁 Was hoping for a gift...', zh: '🎁 本以为会有礼物……' },
+      chatGood: { pt: '💬 Papo ótimo', en: '💬 Great talk', zh: '💬 聊得很好' },
+      chatBad: { pt: '💬 Papo estranho', en: '💬 Awkward talk', zh: '💬 聊得很尴尬' },
+      game: { pt: '{icon} {game}: {n} pontos', en: '{icon} {game}: {n} points', zh: '{icon} {game}：{n} 分' },
+      end: { pt: '🌙 Despedida: {txt}', en: '🌙 Goodbye: {txt}', zh: '🌙 告别：{txt}' },
+    },
+    looks: {
+      hat: { icon: '🎩', pt: 'Chapéu elegante', en: 'Fancy hat', zh: '礼帽' },
+      flower: { icon: '🌹', pt: 'Flor na lapela', en: 'Flower buttonhole', zh: '胸花' },
+      shades: { icon: '🕶', pt: 'Óculos escuros', en: 'Sunglasses', zh: '墨镜' },
+      bow: { icon: '🎀', pt: 'Laço', en: 'Bow', zh: '蝴蝶结' },
+      casual: { icon: '👕', pt: 'Casual', en: 'Casual', zh: '休闲' },
+      glasses: { icon: '🤓', pt: 'Óculos de grau', en: 'Reading glasses', zh: '眼镜' },
+    },
+    gifts: {
+      flowers: { icon: '🌻', cost: 3, pt: 'Buquê de girassóis', en: 'Sunflower bouquet', zh: '向日葵花束' },
+      choc: { icon: '🍫', cost: 5, pt: 'Chocolate de sol', en: 'Sun chocolate', zh: '阳光巧克力' },
+      plush: { icon: '🧸', cost: 5, pt: 'Pelúcia de zumbi', en: 'Zombie plush', zh: '僵尸玩偶' },
+      book: { icon: '📚', cost: 5, pt: 'Almanaque raro', en: 'Rare almanac', zh: '稀有图鉴' },
+      water: { icon: '💧', cost: 0, pt: 'Água de nascente', en: 'Spring water', zh: '山泉水' },
+    },
+    games: {
+      suns: { icon: '☀️', pt: 'Chuva de sóis', en: 'Sun shower', zh: '阳光雨', how: { pt: 'Toque nos sóis antes que caiam! 12 segundos.', en: 'Tap the suns before they fall! 12 seconds.', zh: '在阳光落地前点击它们！12 秒。' } },
+      quiz: { icon: '❓', pt: 'Quiz do casal', en: 'Couple quiz', zh: '情侣问答', how: { pt: 'Quanto você sabe sobre {name}? 3 perguntas.', en: 'How much do you know about {name}? 3 questions.', zh: '你有多了解 {name}？3 个问题。' } },
+      rhythm: { icon: '🎵', pt: 'Dança', en: 'Dance', zh: '跳舞', how: { pt: 'Toque em ♪ quando a nota passar pela linha. 8 notas.', en: 'Tap ♪ when the note crosses the line. 8 notes.', zh: '音符经过线时点击 ♪。8 个音符。' } },
+      photo: { icon: '📸', pt: 'Foto perfeita', en: 'Perfect photo', zh: '完美合照', how: { pt: 'Toque em 📸 quando o quadro estiver bem no meio. 3 tentativas.', en: 'Tap 📸 when the frame is right in the middle. 3 tries.', zh: '相框正好在中间时点击 📸。3 次机会。' } },
+    },
+    quiz: {
+      cost: { pt: 'Quanto sol eu custo?', en: 'How much sun do I cost?', zh: '我需要多少阳光？' },
+      family: { pt: 'Qual é a minha família?', en: 'What is my family?', zh: '我属于哪个家族？' },
+      like: { pt: 'Do que eu mais gosto?', en: 'What do I like the most?', zh: '我最喜欢什么？' },
+      sign: { pt: 'Qual é o meu signo?', en: 'What is my sign?', zh: '我是什么星座？' },
+      right: { pt: 'Acertou! 😍', en: 'Right! 😍', zh: '答对了！😍' },
+      wrong: { pt: 'Errou... 😅', en: 'Wrong... 😅', zh: '答错了……😅' },
+    },
+    // Places: who usually likes them (personalities, families), the mini-game,
+    // the colors of the scene and its script.
+    places: {
+      garden: {
+        icon: '🧺', game: 'suns', bg: 'linear-gradient(#9ee6ff, #d8f7a8 60%, #7cc954)', deco: '🌳 ☀️ 🦋 🌼',
+        name: { pt: 'Piquenique no jardim', en: 'Garden picnic', zh: '花园野餐' },
+        arrive: { pt: 'Que dia lindo para um piquenique! Trouxe sanduíche de adubo. 🥪', en: 'What a lovely day for a picnic! I brought compost sandwiches. 🥪', zh: '野餐的好天气！我带了肥料三明治。🥪' },
+        beats: [
+          { line: { pt: 'Olha aquelas nuvens... aquela parece um zumbi de balde! ☁️', en: 'Look at those clouds... that one looks like a buckethead! ☁️', zh: '看那些云……那朵像铁桶僵尸！☁️' },
+            romantic: { pt: 'A nuvem mais bonita está aqui do meu lado.', en: 'The prettiest cloud is right here next to me.', zh: '最美的云就在我身边。' },
+            funny: { pt: 'E aquela parece o seu cabelo de manhã! 😂', en: 'And that one looks like your hair in the morning! 😂', zh: '那朵像你早上的发型！😂' },
+            sincere: { pt: 'Faz tempo que eu não paro para olhar o céu. Obrigado por isso.', en: 'It’s been ages since I stopped to look at the sky. Thanks for this.', zh: '好久没停下来看天空了。谢谢你。' },
+            bold: { pt: 'Se ele descer, eu te protejo. Prometo.', en: 'If it comes down, I’ll protect you. Promise.', zh: '如果它下来，我会保护你。我保证。' } },
+          { line: { pt: 'Se você fosse uma planta, qual seria?', en: 'If you were a plant, which one would you be?', zh: '如果你是植物，你会是哪种？' },
+            romantic: { pt: 'Um girassol, para ficar virado para você o dia todo. 🌻', en: 'A sunflower, to face you all day long. 🌻', zh: '向日葵，整天都朝着你。🌻' },
+            funny: { pt: 'Uma Noz: dura por fora, crocante por dentro.', en: 'A Wall-nut: tough outside, crunchy inside.', zh: '坚果墙：外硬内脆。' },
+            sincere: { pt: 'Acho que um Cogumelo da Sorte: tímido, mas sempre por perto.', en: 'Maybe a Lucky Mushroom: shy, but always around.', zh: '大概是幸运蘑菇：害羞，但总在身边。' },
+            bold: { pt: 'Uma Cereja-Bomba. Eu chego causando. 💥', en: 'A Cherry Bomb. I make an entrance. 💥', zh: '樱桃炸弹。我一出场就爆炸。💥' } },
+        ],
+        loves: { pers: ['sweet', 'shy'], fam: ['Sun', 'Peashooter'] }, hates: { fam: ['Shadow'] },
+      },
+      cinema: {
+        icon: '🎬', game: 'quiz', bg: 'linear-gradient(#1b1030, #3a1d4f 70%, #120914)', deco: '🍿 🎞 🥤',
+        name: { pt: 'Cinema: A Noite dos Mortos-Vivos 4', en: 'Movies: Night of the Living Dead 4', zh: '电影院：活死人之夜 4' },
+        arrive: { pt: 'Peguei a pipoca! Dizem que esse filme é de arrepiar as folhas. 🍿', en: 'I got the popcorn! They say this movie makes your leaves stand on end. 🍿', zh: '我买了爆米花！听说这部电影让人叶子都竖起来。🍿' },
+        beats: [
+          { line: { pt: '*um zumbi pula na tela* AAAH! 😱', en: '*a zombie jumps on screen* AAAH! 😱', zh: '*屏幕上跳出僵尸* 啊啊啊！😱' },
+            romantic: { pt: '*segura a sua folha* Tô aqui com você.', en: '*holds your leaf* I’m right here with you.', zh: '*握住你的叶子* 我在这儿陪你。' },
+            funny: { pt: 'Calma, ele só quer pipoca também. 🍿', en: 'Relax, he just wants popcorn too. 🍿', zh: '别怕，他也只是想吃爆米花。🍿' },
+            sincere: { pt: 'Confesso que eu também me assustei.', en: 'I’ll admit I got scared too.', zh: '老实说我也被吓到了。' },
+            bold: { pt: 'Se fosse de verdade, eu já tinha resolvido. 😎', en: 'If it were real, I’d have handled it already. 😎', zh: '要是真的，我早就搞定了。😎' } },
+          { line: { pt: 'E aí, o que achou do final?', en: 'So, what did you think of the ending?', zh: '你觉得结局怎么样？' },
+            romantic: { pt: 'Não vi direito... eu estava olhando para você.', en: 'I didn’t really watch... I was looking at you.', zh: '没怎么看……我一直在看你。' },
+            funny: { pt: 'O cortador de grama merecia um Oscar.', en: 'The lawn mower deserved an Oscar.', zh: '割草机应该拿奥斯卡。' },
+            sincere: { pt: 'Achei corajoso. Gosto de histórias que terminam em aberto.', en: 'I found it brave. I like open endings.', zh: '很有勇气。我喜欢开放式结局。' },
+            bold: { pt: 'Fraco. Eu escreveria um melhor, com a gente de protagonista.', en: 'Weak. I’d write a better one, starring us.', zh: '一般。我能写个更好的，我们当主角。' } },
+        ],
+        loves: { pers: ['nerd', 'drama'], fam: ['Shadow', 'Magic'] }, hates: { pers: ['shy'] },
+      },
+      beach: {
+        icon: '🏖', game: 'photo', bg: 'linear-gradient(#7fd3ff, #bdeeff 55%, #f6e3a5 56%, #f2d27e)', deco: '🌊 🐚 🦀 ⛱',
+        name: { pt: 'Praia das Ondas Grandes', en: 'Big Wave Beach', zh: '巨浪海滩' },
+        arrive: { pt: 'Sente essa brisa! Só cuidado com os zumbis surfistas. 🏄', en: 'Feel that breeze! Just watch out for surfer zombies. 🏄', zh: '感受这海风！小心冲浪僵尸。🏄' },
+        beats: [
+          { line: { pt: 'Vamos entrar no mar? A água tá geladinha!', en: 'Shall we go in the water? It’s nice and cold!', zh: '下海吗？水很凉！' },
+            romantic: { pt: 'Vamos ver o pôr do sol de mãos dadas primeiro?', en: 'Shall we watch the sunset holding hands first?', zh: '先手牵手看日落好吗？' },
+            funny: { pt: 'Só se você prometer não me jogar uma onda! 🌊', en: 'Only if you promise not to splash me! 🌊', zh: '除非你保证不泼我！🌊' },
+            sincere: { pt: 'Eu não sei nadar muito bem... mas com você eu tento.', en: 'I can’t swim very well... but I’ll try with you.', zh: '我不太会游泳……但和你一起我愿意试试。' },
+            bold: { pt: 'Quem chegar por último é um zumbi podre! 🏃', en: 'Last one in is a rotten zombie! 🏃', zh: '最后一个下水的是臭僵尸！🏃' } },
+          { line: { pt: 'Achei uma concha! Diz que se ouvir o mar, um desejo se realiza. 🐚', en: 'I found a shell! They say if you hear the sea, a wish comes true. 🐚', zh: '我捡到一个贝壳！听见海声愿望就会实现。🐚' },
+            romantic: { pt: 'Meu desejo já se realizou: estar aqui com você.', en: 'My wish already came true: being here with you.', zh: '我的愿望已经实现了：和你在这里。' },
+            funny: { pt: 'Eu ouvi... um zumbi pedindo protetor solar. 🧴', en: 'I heard... a zombie asking for sunscreen. 🧴', zh: '我听到……一个僵尸在要防晒霜。🧴' },
+            sincere: { pt: 'Eu desejaria que esse dia não acabasse.', en: 'I’d wish this day never ended.', zh: '我希望这一天永远不要结束。' },
+            bold: { pt: 'Não preciso de desejo. Eu faço acontecer.', en: 'I don’t need wishes. I make things happen.', zh: '我不需要愿望。我自己实现。' } },
+        ],
+        loves: { pers: ['brave', 'sassy'], fam: ['Electricity', 'Lobber'] }, hates: { fam: ['Cold', 'Fire'] },
+      },
+      dinner: {
+        icon: '🕯️', game: 'rhythm', need: 1, bg: 'linear-gradient(#2a0f1c, #5c1f2e 65%, #2a0f1c)', deco: '🕯️ 🍷 🎻 🌹',
+        name: { pt: 'Jantar à luz de velas', en: 'Candlelight dinner', zh: '烛光晚餐' },
+        arrive: { pt: 'Que lugar chique! Você caprichou. 🕯️', en: 'Such a fancy place! You went all out. 🕯️', zh: '好高级的地方！你真用心。🕯️' },
+        beats: [
+          { line: { pt: 'O garçom recomendou o prato do chef: salada de folhas raras. O que vamos pedir?', en: 'The waiter recommended the chef’s special: rare leaf salad. What shall we order?', zh: '服务员推荐主厨特色：珍稀叶沙拉。我们点什么？' },
+            romantic: { pt: 'Um prato só, para dividir com você.', en: 'Just one dish, to share with you.', zh: '只点一份，和你一起分享。' },
+            funny: { pt: 'Tudo, menos cérebro. Por motivos óbvios. 🧠', en: 'Anything but brains. For obvious reasons. 🧠', zh: '除了脑子什么都行，原因你懂的。🧠' },
+            sincere: { pt: 'Pede o que você mais gosta, quero conhecer seu gosto.', en: 'Order your favorite, I want to know your taste.', zh: '点你最喜欢的，我想了解你的口味。' },
+            bold: { pt: 'Garçom! O mais caro do cardápio, por favor.', en: 'Waiter! The most expensive thing on the menu, please.', zh: '服务员！来份菜单上最贵的。' } },
+          { line: { pt: 'Posso te contar um segredo? Às vezes eu tenho medo de murchar. 🥀', en: 'Can I tell you a secret? Sometimes I’m afraid of wilting. 🥀', zh: '告诉你个秘密？有时我害怕枯萎。🥀' },
+            romantic: { pt: 'Enquanto eu estiver aqui, você vai ter sol todo dia.', en: 'As long as I’m here, you’ll have sun every day.', zh: '只要我在，你每天都会有阳光。' },
+            funny: { pt: 'Relaxa, eu rego você. Duas vezes por dia. 💧', en: 'Relax, I’ll water you. Twice a day. 💧', zh: '放心，我会给你浇水，一天两次。💧' },
+            sincere: { pt: 'Obrigado por confiar em mim. Eu também tenho medos.', en: 'Thanks for trusting me. I have fears too.', zh: '谢谢你信任我。我也有害怕的事。' },
+            bold: { pt: 'Murchar? Você? Nunca. Você é forte demais.', en: 'Wilt? You? Never. You’re too strong.', zh: '枯萎？你？不可能。你太坚强了。' } },
+        ],
+        loves: { pers: ['sweet', 'drama'], fam: ['Magic', 'Fire'] }, hates: { pers: ['brave'] },
+      },
+      park: {
+        icon: '🎡', game: 'suns', need: 0, bg: 'linear-gradient(#ffb3e1, #ffe0a8 60%, #9fd6ff)', deco: '🎡 🎢 🍭 🎈',
+        name: { pt: 'Parque de diversões', en: 'Amusement park', zh: '游乐园' },
+        arrive: { pt: 'Montanha-russa primeiro? Ou roda-gigante? Ou os dois?! 🎢', en: 'Roller coaster first? Or the Ferris wheel? Or both?! 🎢', zh: '先坐过山车？还是摩天轮？还是都坐？！🎢' },
+        beats: [
+          { line: { pt: 'Na roda-gigante lá em cima: dá para ver o jardim inteiro daqui! 🎡', en: 'At the top of the Ferris wheel: you can see the whole garden from here! 🎡', zh: '在摩天轮顶端：能看到整个花园！🎡' },
+            romantic: { pt: 'A vista é linda, mas não tanto quanto você.', en: 'The view is beautiful, but not as much as you.', zh: '风景很美，但不如你美。' },
+            funny: { pt: 'Dá para ver até minha casa... e meus 30 boletos. 😂', en: 'I can even see my house... and my 30 bills. 😂', zh: '能看到我家……和我的 30 张账单。😂' },
+            sincere: { pt: 'Tenho um pouco de medo de altura, mas valeu a pena.', en: 'I’m a bit scared of heights, but it was worth it.', zh: '我有点恐高，但很值得。' },
+            bold: { pt: 'Bora balançar a cabine? 😈', en: 'Let’s rock the cabin? 😈', zh: '我们来晃晃座舱？😈' } },
+          { line: { pt: 'Ganhei um ursinho na barraca! Quer?', en: 'I won a teddy at the stall! Want it?', zh: '我在摊位赢了个小熊！你要吗？' },
+            romantic: { pt: 'Só se ele puder dormir do lado da sua foto. 🧸', en: 'Only if it can sleep next to your photo. 🧸', zh: '只要它能睡在你的照片旁边。🧸' },
+            funny: { pt: 'Ele tem cara de zumbi de pelúcia. Amei! 😂', en: 'It looks like a plush zombie. Love it! 😂', zh: '它像个僵尸玩偶。好喜欢！😂' },
+            sincere: { pt: 'Fica com você, ele combina mais contigo.', en: 'You keep it, it suits you better.', zh: '你留着吧，它更适合你。' },
+            bold: { pt: 'Agora é minha vez: vou ganhar o maior de todos.', en: 'My turn: I’ll win the biggest one.', zh: '轮到我了：我要赢最大的那个。' } },
+        ],
+        loves: { pers: ['brave', 'sassy'], fam: ['Explosive', 'Melee'] }, hates: { pers: ['shy'] },
+      },
+      cafe: {
+        icon: '☕', game: 'quiz', bg: 'linear-gradient(#f6e2c8, #d9b48a 70%, #a5764d)', deco: '☕ 🥐 📖 🪴',
+        name: { pt: 'Café tranquilo', en: 'Quiet café', zh: '安静的咖啡馆' },
+        arrive: { pt: 'Adoro esse café. É tão calmo... perfeito para conversar. ☕', en: 'I love this café. It’s so calm... perfect for talking. ☕', zh: '我喜欢这家咖啡馆，很安静……适合聊天。☕' },
+        beats: [
+          { line: { pt: 'O que você mais gosta de fazer quando não está defendendo o jardim?', en: 'What do you like doing when you’re not defending the garden?', zh: '不守护花园的时候你喜欢做什么？' },
+            romantic: { pt: 'Pensar em quem eu vou encontrar no próximo café. 😊', en: 'Thinking about who I’ll meet at the next café. 😊', zh: '想着下次在咖啡馆会见到谁。😊' },
+            funny: { pt: 'Dormir. Profissionalmente. 😴', en: 'Sleeping. Professionally. 😴', zh: '睡觉。专业级的。😴' },
+            sincere: { pt: 'Ler o almanaque e aprender sobre cada planta.', en: 'Reading the almanac and learning about every plant.', zh: '读图鉴，了解每一株植物。' },
+            bold: { pt: 'Treinar para a próxima horda. Sempre preparado.', en: 'Training for the next horde. Always ready.', zh: '为下一波尸潮训练，时刻准备着。' } },
+          { line: { pt: 'Se a gente pudesse viajar para qualquer mundo agora, qual seria?', en: 'If we could travel to any world right now, which one?', zh: '如果现在能去任何世界，你想去哪？' },
+            romantic: { pt: 'Qualquer um, desde que seja com você.', en: 'Any, as long as it’s with you.', zh: '只要和你一起，哪都行。' },
+            funny: { pt: 'Jurássico, para ver um dinossauro tomando café. 🦖', en: 'Jurassic, to see a dinosaur drinking coffee. 🦖', zh: '侏罗纪，看恐龙喝咖啡。🦖' },
+            sincere: { pt: 'Eu ficaria aqui mesmo. Esse momento está bom demais.', en: 'I’d stay right here. This moment is too good.', zh: '我就待在这儿。这一刻太美好了。' },
+            bold: { pt: 'Futuro Distante. Quero pilotar um robô gigante.', en: 'Far Future. I want to pilot a giant robot.', zh: '遥远的未来，我想驾驶巨型机器人。' } },
+        ],
+        loves: { pers: ['shy', 'nerd'], fam: ['Cold', 'Defence'] }, hates: { pers: ['brave'] },
+      },
+    },
+    react: {
+      placeLove: { pt: 'Você me trouxe aqui?! Eu AMO esse lugar! 😍', en: 'You brought me here?! I LOVE this place! 😍', zh: '你带我来这儿？！我超爱这个地方！😍' },
+      placeHate: { pt: 'Ah... aqui? Tudo bem, né... 😕', en: 'Oh... here? Well, okay... 😕', zh: '啊……这里？好吧……😕' },
+      lookLove: { pt: 'E que visual! {look} combinou demais com você. 😳', en: 'And what a look! The {look} really suits you. 😳', zh: '造型真棒！{look}太适合你了。😳' },
+      lookHate: { pt: '{look}? Hmm... ousado. 😅', en: 'The {look}? Hmm... bold choice. 😅', zh: '{look}？嗯……挺大胆的。😅' },
+      giftLove: { pt: '{gift}?! Como você sabia?! É o meu favorito! 🥹', en: 'A {gift}?! How did you know?! It’s my favorite! 🥹', zh: '{gift}？！你怎么知道的？！这是我最喜欢的！🥹' },
+      giftOk: { pt: 'Um presente para mim? Obrigad{g:a|o|e}! 😊', en: 'A gift for me? Thank you! 😊', zh: '送我的礼物？谢谢！😊' },
+      gameIntro: { pt: 'Vamos fazer uma coisa juntos?', en: 'Shall we do something together?', zh: '我们一起做点什么吧？' },
+      gameGood: { pt: 'Nossa, formamos um ótimo time! 🎉', en: 'Wow, we make a great team! 🎉', zh: '哇，我们真是好搭档！🎉' },
+      gameMeh: { pt: 'Foi divertido mesmo assim! 😄', en: 'It was fun anyway! 😄', zh: '还是很好玩！😄' },
+      endQ: { pt: 'Bom... chegamos. Foi um dia especial. 🌙', en: 'Well... here we are. It was a special day. 🌙', zh: '嗯……到了。今天很特别。🌙' },
+      endKiss: { pt: 'Beijo na folha 💋', en: 'Kiss on the leaf 💋', zh: '亲吻叶子 💋' },
+      endHug: { pt: 'Abraço apertado 🤗', en: 'Big hug 🤗', zh: '紧紧拥抱 🤗' },
+      endShake: { pt: 'Aperto de mão 🤝', en: 'Handshake 🤝', zh: '握手 🤝' },
+      endKissYes: { pt: '*fica vermelh{g:a|o|e}* ...me liga amanhã? 💖', en: '*blushes* ...call me tomorrow? 💖', zh: '*脸红* ……明天给我打电话？💖' },
+      endKissNo: { pt: 'Calma, ainda é cedo pra isso... 😳', en: 'Easy, it’s a bit early for that... 😳', zh: '慢点，现在还太早了……😳' },
+      endHugYes: { pt: 'Que abraço bom... 🥰', en: 'What a nice hug... 🥰', zh: '这个拥抱好温暖……🥰' },
+      endShakeHigh: { pt: 'Um... aperto de mão? Ok então. 😐', en: 'A... handshake? Okay then. 😐', zh: '握……手？好吧。😐' },
+      endShakeLow: { pt: 'Foi bom te conhecer. 🤝', en: 'Nice meeting you. 🤝', zh: '很高兴认识你。🤝' },
+    },
+  };
+
+  /* ------------------------------------------------ texts added in 2.5 */
+
+  // More interactive dates: a mini-game for each place, touching the plant,
+  // surprise events, a branching talk with secrets and free text.
+  SCENE.places.cinema.game = 'popcorn';
+  SCENE.places.beach.game = 'sandcastle';
+  SCENE.places.cafe.game = 'latte';
+  SCENE.places.park.game = 'targets';
+  SCENE.places.dinner.game = 'plate';
+  Object.assign(SCENE.games, {
+    popcorn: { icon: '🍿', pt: 'Pipoca voadora', en: 'Flying popcorn', zh: '飞舞的爆米花', how: { pt: 'Pegue a pipoca que pula do balde antes que caia no chão! 12 segundos.', en: 'Catch the popcorn jumping out of the bucket before it hits the floor! 12 seconds.', zh: '在爆米花落地前接住它！12 秒。' } },
+    sandcastle: { icon: '🏰', pt: 'Castelo de areia', en: 'Sandcastle', zh: '沙堡', how: { pt: 'Toque para soltar cada andar bem em cima do anterior. 6 andares.', en: 'Tap to drop each floor right on top of the last one. 6 floors.', zh: '点击让每一层正好落在上一层上。6 层。' } },
+    latte: { icon: '☕', pt: 'Latte art', en: 'Latte art', zh: '拉花', how: { pt: 'Desenhe o coração no café seguindo o pontilhado, com o dedo ou o mouse.', en: 'Draw the heart on the coffee following the dots, with your finger or mouse.', zh: '用手指或鼠标沿虚线在咖啡上画爱心。' } },
+    targets: { icon: '🎯', pt: 'Tiro ao zumbi', en: 'Zombie shooting', zh: '打僵尸', how: { pt: 'Acerte os zumbis 🧟 e poupe os girassóis 🌻! 14 segundos.', en: 'Hit the zombies 🧟 and spare the sunflowers 🌻! 14 seconds.', zh: '打僵尸 🧟，别打向日葵 🌻！14 秒。' } },
+    plate: { icon: '🍽', pt: 'Monte o prato', en: 'Build the plate', zh: '拼盘', how: { pt: 'Memorize o pedido e toque nos ingredientes na mesma ordem. 3 rodadas.', en: 'Memorize the order and tap the ingredients in the same order. 3 rounds.', zh: '记住点单，按同样顺序点击食材。3 轮。' } },
+  });
+  Object.assign(SCENE.ui, {
+    games2: { pt: '2 minijogos · pode tocar nela e dar petiscos · surpresas', en: '2 mini-games · you can touch her and give snacks · surprises', zh: '2 个小游戏 · 可以触摸和喂零食 · 惊喜' },
+    touchHint: { pt: '👆 Toque, faça carinho (arraste), segure a folha (segure), cócegas (3 toques) ou arraste um petisco até ela.', en: '👆 Tap, pet (drag), hold her leaf (press and hold), tickle (3 taps) or drag a snack to her.', zh: '👆 点击、抚摸（拖动）、牵叶子（长按）、挠痒（连点 3 下），或拖零食给她。' },
+    done: { pt: 'Pronto', en: 'Done', zh: '完成' },
+    talkTitle: { pt: 'Conversa livre: escreva o que quiser (até 3 mensagens)', en: 'Free talk: write anything (up to 3 messages)', zh: '自由聊天：想说什么都行（最多 3 条）' },
+    talkPh: { pt: 'Diga algo para ela…', en: 'Say something…', zh: '说点什么…' },
+    talkEnd: { pt: 'Encerrar conversa', en: 'End the talk', zh: '结束聊天' },
+    hurry: { pt: 'Rápido!', en: 'Quick!', zh: '快！' },
+    order: { pt: 'Quero: {items}', en: 'I want: {items}', zh: '我要：{items}' },
+    yourTurn: { pt: 'Sua vez!', en: 'Your turn!', zh: '轮到你了！' },
+    secrets: { pt: 'Segredos', en: 'Secrets', zh: '秘密' },
+  });
+  Object.assign(SCENE.hl, {
+    touchGood: { pt: '👆 Gostou dos seus carinhos', en: '👆 Liked your touch', zh: '👆 喜欢你的触碰' },
+    touchBad: { pt: '👆 Achou você atirado demais', en: '👆 Found you too forward', zh: '👆 觉得你太主动了' },
+    eventGood: { pt: '{icon} Mandou bem na surpresa', en: '{icon} Handled the surprise', zh: '{icon} 漂亮地应对了意外' },
+    eventBad: { pt: '{icon} A surpresa não foi bem', en: '{icon} The surprise went badly', zh: '{icon} 意外处理得不好' },
+    secret: { pt: '🤫 Ela te contou um segredo', en: '🤫 She told you a secret', zh: '🤫 她告诉了你一个秘密' },
+    talkGood: { pt: '⌨️ Conversa livre: arrasou', en: '⌨️ Free talk: nailed it', zh: '⌨️ 自由聊天：很成功' },
+    talkBad: { pt: '⌨️ Conversa livre: deslizes', en: '⌨️ Free talk: some slips', zh: '⌨️ 自由聊天：有些失误' },
+  });
+
+  // Touching the plant: what each personality loves and dislikes.
+  SCENE.touch = {
+    kinds: {
+      poke: { icon: '👉', pt: 'cutucou', en: 'poked', zh: '戳了戳' },
+      pet: { icon: '🤲', pt: 'fez carinho', en: 'petted', zh: '抚摸' },
+      hold: { icon: '🍃', pt: 'segurou a folha', en: 'held her leaf', zh: '牵起叶子' },
+      tickle: { icon: '🤭', pt: 'fez cócegas', en: 'tickled', zh: '挠痒' },
+    },
+    snacks: {
+      dew: { icon: '💧', pt: 'Gota de orvalho', en: 'Dewdrop', zh: '露珠' },
+      cookie: { icon: '🍪', pt: 'Biscoito de adubo', en: 'Compost cookie', zh: '肥料饼干' },
+      sunbit: { icon: '☀️', pt: 'Raio de sol', en: 'Sunbeam', zh: '阳光' },
+    },
+    love: { pt: ['Hihi, gostei! 💕', 'Faz de novo! 😊', 'Que gostoso... 🥰'], en: ['Hehe, I liked that! 💕', 'Do it again! 😊', 'That’s nice... 🥰'], zh: ['嘻嘻，我喜欢！💕', '再来一次！😊', '好舒服……🥰'] },
+    ok: { pt: ['Hm? 😊', 'Oi, oi! 😄'], en: ['Hm? 😊', 'Hey, hey! 😄'], zh: ['嗯？😊', '嘿嘿！😄'] },
+    hate: { pt: ['Ei! Não gosto disso. 😠', 'Para com isso! 😤'], en: ['Hey! I don’t like that. 😠', 'Stop that! 😤'], zh: ['喂！我不喜欢这样。😠', '别闹了！😤'] },
+    early: { pt: ['Ei, calma! A gente mal começou... 😳', 'Devagar com essa folha! 😳'], en: ['Hey, easy! We just started... 😳', 'Slow down with that leaf! 😳'], zh: ['喂，慢点！我们才刚开始……😳', '别这么快碰我的叶子！😳'] },
+    tooMuch: { pt: ['Tá bom, chega de mão boba. 😅', 'Ok, ok, já entendi! 😅'], en: ['Okay, enough with the hands. 😅', 'Okay, okay, I get it! 😅'], zh: ['好啦，手别乱动了。😅', '好好好，我懂了！😅'] },
+    tickle: { pt: ['HAHAHA para! 😂', 'Hihihi não vale! 😂'], en: ['HAHAHA stop! 😂', 'Hehehe no fair! 😂'], zh: ['哈哈哈别挠了！😂', '嘻嘻不公平！😂'] },
+    snackLove: { pt: ['Hmmm, meu favorito! 😋', 'Como você sabia?! 😋'], en: ['Mmm, my favorite! 😋', 'How did you know?! 😋'], zh: ['嗯~我最爱的！😋', '你怎么知道的？！😋'] },
+    snackOk: { pt: ['Obrigad{g:a|o|e}! Nham. 😊'], en: ['Thanks! Yum. 😊'], zh: ['谢谢！好吃。😊'] },
+    full: { pt: ['Estou chei{g:a|o|e}! Não cabe mais nada. 😵'], en: ['I’m full! Not another bite. 😵'], zh: ['我吃饱了！一口也吃不下了。😵'] },
+  };
+
+  // Surprise events: an action (zombies) or a choice against the clock.
+  SCENE.events = {
+    zombie: { icon: '🧟', line: { pt: 'AAAH! Um zumbi vindo na nossa direção! 😱', en: 'AAAH! A zombie coming our way! 😱', zh: '啊啊啊！一只僵尸朝我们走来了！😱' },
+      how: { pt: 'Toque 3 vezes em cada zumbi antes que ele chegue nela!', en: 'Tap each zombie 3 times before it reaches her!', zh: '在僵尸碰到她之前，每只点 3 下！' },
+      win: { pt: '{u:Minha heroína|Meu herói|Minhe heroe}! Você me salvou! 🥹', en: 'My hero! You saved me! 🥹', zh: '我的英雄！你救了我！🥹' },
+      lose: { pt: 'Ele quase me pegou! Você nem se mexeu... 😨', en: 'It almost got me! You barely moved... 😨', zh: '它差点抓到我！你都没怎么动……😨' } },
+    rain: { icon: '🌧', line: { pt: 'Ih, começou a chover forte! ☔', en: 'Oh no, it started pouring! ☔', zh: '哎呀，下大雨了！☔' },
+      opts: [
+        { k: 'share', pt: 'Dividir o guarda-chuva (bem juntinhos)', en: 'Share the umbrella (close together)', zh: '一起撑伞（靠得很近）' },
+        { k: 'run', pt: 'Correr para se abrigar', en: 'Run for cover', zh: '跑去躲雨' },
+        { k: 'dance', pt: 'Dançar na chuva!', en: 'Dance in the rain!', zh: '在雨中跳舞！' },
+      ] },
+    spill: { icon: '🍝', line: { pt: 'Opa! Alguém esbarrou e derrubou comida em você! 🍝', en: 'Oops! Someone bumped into you and spilled food on you! 🍝', zh: '哎呀！有人撞到你，把食物洒在你身上了！🍝' },
+      opts: [
+        { k: 'laugh', pt: 'Rir da situação 😂', en: 'Laugh it off 😂', zh: '一笑置之 😂' },
+        { k: 'clean', pt: 'Pedir licença e se limpar com calma', en: 'Excuse yourself and clean up calmly', zh: '礼貌离开去清理' },
+        { k: 'angry', pt: 'Reclamar bem alto 😡', en: 'Complain loudly 😡', zh: '大声抱怨 😡' },
+      ] },
+    ex: { icon: '😒', line: { pt: '{ex} aparece: "Ora, ora, {name}... quem é {u:essa|esse|esse} aí?"', en: '{ex} shows up: "Well, well, {name}... who’s this?"', zh: '{ex} 出现了：“哟，{name}……这位是谁？”' },
+      opts: [
+        { k: 'polite', pt: 'Me apresentar educadamente', en: 'Introduce yourself politely', zh: '礼貌地自我介绍' },
+        { k: 'claim', pt: 'Segurar a folha {g:dela|dele|delu}: "Estamos num encontro."', en: 'Hold her leaf: "We’re on a date."', zh: '牵起她的叶子：“我们在约会。”' },
+        { k: 'ignore', pt: 'Ignorar e continuar o papo', en: 'Ignore them and keep talking', zh: '无视对方继续聊天' },
+      ] },
+    good: { pt: ['Isso foi perfeito! 💕', 'Adorei como você lidou com isso! 😍'], en: ['That was perfect! 💕', 'Loved how you handled that! 😍'], zh: ['太完美了！💕', '我喜欢你的处理方式！😍'] },
+    meh: { pt: ['Ok, tudo bem. 🙂'], en: ['Okay, fine. 🙂'], zh: ['好吧，没事。🙂'] },
+    bad: { pt: ['Sério? Que vergonha... 😣', 'Não precisava disso. 😒'], en: ['Seriously? How embarrassing... 😣', 'That wasn’t necessary. 😒'], zh: ['真的吗？好丢人……😣', '没必要这样。😒'] },
+    slow: { pt: ['Você ficou parad{u:a|o|e}...? 😶'], en: ['You just froze...? 😶'], zh: ['你就愣住了……？😶'] },
+  };
+
+  // The talk branches: after a good answer she opens up (a secret), after a
+  // bad one you can apologize.
+  SCENE.branch = {
+    secretIntro: { pt: 'Posso te contar uma coisa que eu nunca contei pra ninguém? {secret}', en: 'Can I tell you something I never told anyone? {secret}', zh: '我能告诉你一件从没跟别人说过的事吗？{secret}' },
+    secretOpts: [
+      { k: 'share', q: 'good', pt: 'Obrigad{u:a|o|e} por confiar. Vou te contar um meu também...', en: 'Thanks for trusting me. I’ll tell you one of mine too...', zh: '谢谢你的信任。我也告诉你一个我的……' },
+      { k: 'joke', q: 'meh', pt: 'Sério? Haha, que fofo!', en: 'Really? Haha, that’s cute!', zh: '真的？哈哈，好可爱！' },
+      { k: 'change', q: 'bad', pt: 'Hmm... e o tempo, hein?', en: 'Hmm... nice weather, huh?', zh: '嗯……今天天气不错啊？' },
+    ],
+    coldIntro: { pt: 'Hmm... 😐', en: 'Hmm... 😐', zh: '嗯……😐' },
+    coldOpts: [
+      { k: 'sorry', q: 'good', pt: 'Desculpa, me expressei mal. Quero muito que esse encontro dê certo.', en: 'Sorry, that came out wrong. I really want this date to go well.', zh: '抱歉，我说错话了。我真的希望这次约会顺利。' },
+      { k: 'joke', q: 'meh', pt: 'Ué, era brincadeira! 😅', en: 'Hey, I was joking! 😅', zh: '哎，我开玩笑的！😅' },
+      { k: 'whatever', q: 'bad', pt: 'Tanto faz.', en: 'Whatever.', zh: '随便。' },
+    ],
+    secrets: {
+      sweet: [{ pt: 'Eu choro vendo filme de zumbi que termina bem. 🥲', en: 'I cry at zombie movies with happy endings. 🥲', zh: '看到有好结局的僵尸电影我会哭。🥲' }, { pt: 'Eu dou nome para todas as abelhas do jardim.', en: 'I name every bee in the garden.', zh: '我给花园里每只蜜蜂都起了名字。' }, { pt: 'Meu sonho é plantar um jardim inteiro só de flores para os amigos.', en: 'My dream is to plant a whole garden of flowers for my friends.', zh: '我的梦想是种一整个花园的花送给朋友。' }],
+      shy: [{ pt: 'Eu ensaio as conversas no espelho antes. Ensaiei essa também. 🙈', en: 'I rehearse conversations in the mirror. I rehearsed this one too. 🙈', zh: '我会对着镜子练习对话。今天的也练过。🙈' }, { pt: 'Eu escrevo poemas, mas nunca mostrei pra ninguém.', en: 'I write poems, but never showed anyone.', zh: '我会写诗，但从没给人看过。' }, { pt: 'Na primeira onda que eu enfrentei, eu desmaiei. 😳', en: 'At my first wave, I fainted. 😳', zh: '第一次面对僵尸潮时我晕倒了。😳' }],
+      sassy: [{ pt: 'Eu finjo que não ligo, mas leio todas as mensagens umas dez vezes. 💅', en: 'I act like I don’t care, but I read every message ten times. 💅', zh: '我装作不在乎，其实每条消息都看十遍。💅' }, { pt: 'Já perdi uma aposta e tive que usar chapéu de balde por uma semana.', en: 'I once lost a bet and had to wear a bucket hat for a week.', zh: '我曾打赌输了，戴了一周铁桶帽。' }, { pt: 'No fundo eu sou muito sentimental. Não conta pra ninguém.', en: 'Deep down I’m very sentimental. Don’t tell anyone.', zh: '其实我很感性。别告诉别人。' }],
+      nerd: [{ pt: 'Eu sei de cor o custo de sol de todas as plantas. Todas. 🤓', en: 'I know the sun cost of every plant by heart. Every one. 🤓', zh: '我能背出所有植物的阳光消耗。全部。🤓' }, { pt: 'Tenho um caderno com estratégias para cada zumbi.', en: 'I keep a notebook of strategies for every zombie.', zh: '我有个本子记录对付每种僵尸的策略。' }, { pt: 'Eu tinha medo de você me achar chat{g:a|o|e}.', en: 'I was afraid you’d find me boring.', zh: '我怕你觉得我很无聊。' }],
+      brave: [{ pt: 'Eu tenho medo de escuro. Só de escuro. 😬', en: 'I’m afraid of the dark. Only the dark. 😬', zh: '我怕黑。只怕黑。😬' }, { pt: 'Já segurei uma horda inteira sozinh{g:a|o|e}... e depois chorei.', en: 'I once held back a whole horde alone... and cried afterwards.', zh: '我曾独自挡住整波僵尸……然后哭了。' }, { pt: 'Meu maior medo é não estar lá quando precisarem de mim.', en: 'My biggest fear is not being there when I’m needed.', zh: '我最怕的是别人需要我时我不在。' }],
+      drama: [{ pt: 'Eu já ensaiei nosso casamento. Duas vezes. 💒', en: 'I already rehearsed our wedding. Twice. 💒', zh: '我已经排练过我们的婚礼了。两次。💒' }, { pt: 'Escrevo um diário de 30 páginas por dia.', en: 'I write a 30-page diary every day.', zh: '我每天写 30 页日记。' }, { pt: 'Todo drama é só vontade de ser notad{g:a|o|e}.', en: 'All the drama is just wanting to be noticed.', zh: '所有的戏都只是想被注意到。' }],
+    },
+  };
+
+  // Free talk: keywords she understands (lowercase, accents removed) and her answers.
+  SCENE.talk = {
+    words: {
+      insult: ['feia', 'feio', 'chata', 'chato', 'idiota', 'burra', 'burro', 'odeio', 'horrivel', 'ridicul', 'ugly', 'stupid', 'hate you', 'boring', 'dumb', 'lixo'],
+      compliment: ['linda', 'lindo', 'bonit', 'fofa', 'fofo', 'gata', 'gato', 'maravilh', 'incrivel', 'perfeit', 'amo', 'adoro', 'gosto de voce', 'cute', 'beautiful', 'pretty', 'love', 'amazing', 'gorgeous', 'adorable'],
+      joke: ['kkk', 'haha', 'hehe', 'rs', 'piada', 'lol', 'lmao', '😂', '🤣', 'zoeira'],
+      zombie: ['zumbi', 'zombie', 'cerebro', 'brain', 'horda', 'horde'],
+      food: ['fome', 'comida', 'pizza', 'adubo', 'sorvete', 'hungry', 'food', 'snack', 'lanche'],
+      hello: ['oi', 'ola', 'eai', 'e ai', 'hey', 'hello', 'hi ', 'opa'],
+      age: ['idade', 'anos voce', 'quantos anos', 'how old', 'age'],
+      sign: ['signo', 'zodiaco', 'sign', 'zodiac'],
+      job: ['trabalh', 'profiss', 'emprego', 'job', 'work'],
+      like: ['gosta', 'curte', 'hobby', 'like', 'favorit'],
+    },
+    reply: {
+      insult: { pt: ['Uau. Que grosseria. 😠', 'Não acredito que você disse isso. 😤'], en: ['Wow. That was rude. 😠', 'I can’t believe you said that. 😤'], zh: ['哇，真没礼貌。😠', '真不敢相信你会这么说。😤'] },
+      compliment: { pt: ['*fica vermelh{g:a|o|e}* Para, assim eu fico sem graça! 😳', 'Você também! 💕'], en: ['*blushes* Stop, you’re making me shy! 😳', 'You too! 💕'], zh: ['*脸红* 别说了，我会害羞的！😳', '你也是！💕'] },
+      joke: { pt: ['Hahaha você é muito engraçad{u:a|o|e}! 😂', 'kkkkk 😂'], en: ['Hahaha you’re so funny! 😂', 'lol 😂'], zh: ['哈哈哈你太好笑了！😂', '笑死 😂'] },
+      zombie: { pt: ['Zumbi? Nem me fala! Mas com você por perto eu fico tranquil{g:a|o|e}. 🧟'], en: ['Zombies? Don’t remind me! But with you around I feel safe. 🧟'], zh: ['僵尸？别提了！不过有你在我就安心。🧟'] },
+      food: { pt: ['Agora fiquei com fome também! 😋'], en: ['Now I’m hungry too! 😋'], zh: ['现在我也饿了！😋'] },
+      hello: { pt: ['Oiê! 😊'], en: ['Hiya! 😊'], zh: ['嗨！😊'] },
+      age: { pt: ['Tenho {age}. E você? 😉'], en: ['I’m {age}. And you? 😉'], zh: ['我{age}。你呢？😉'] },
+      sign: { pt: ['Sou de {sign}! Combina comigo? ✨'], en: ['I’m a {sign}! Does it suit me? ✨'], zh: ['我是{sign}！适合我吗？✨'] },
+      job: { pt: ['Trabalho como {job}. Adoro o que eu faço!'], en: ['I work as a {job}. I love what I do!'], zh: ['我是{job}。我很喜欢我的工作！'] },
+      like: { pt: ['Eu amo {likes}! E você?'], en: ['I love {likes}! And you?'], zh: ['我爱{likes}！你呢？'] },
+      remember: { pt: ['Você lembrou que eu gosto de {thing}?! 🥹'], en: ['You remembered I like {thing}?! 🥹'], zh: ['你记得我喜欢{thing}？！🥹'] },
+      question: { pt: ['Boa pergunta! Hmm... deixa eu pensar. 🤔', 'Por que você quer saber? 😏'], en: ['Good question! Hmm... let me think. 🤔', 'Why do you want to know? 😏'], zh: ['好问题！嗯……让我想想。🤔', '你为什么想知道？😏'] },
+      other: { pt: ['Hmm, entendi. 🙂', 'Interessante! Conta mais.', 'Ah, é? 😄'], en: ['Hmm, I see. 🙂', 'Interesting! Tell me more.', 'Oh, really? 😄'], zh: ['嗯，我懂了。🙂', '有意思！多说点。', '真的吗？😄'] },
+      repeat: { pt: ['Você já disse isso. 😅'], en: ['You already said that. 😅'], zh: ['你已经说过了。😅'] },
+    },
+  };
+
   // Personalities: the openers and reactions of each plant, her favorite
   // sticker and how easily she ghosts after a bad reply.
   var PERS = {
@@ -551,5 +912,5 @@
     { icon: '💒', name: { pt: 'Casados', en: 'Married', zh: '已结婚' }, bonus: { pt: '+2 adubos, +100 ☀', en: '+2 plant food, +100 ☀', zh: '+2 能量豆，+100 ☀' } },
   ];
 
-  X.matchText = { TXT: TXT, CHAT: CHAT, PERS: PERS, DATES: DATES, STAGES: STAGES, TRAITS: TRAITS };
+  X.matchText = { TXT: TXT, CHAT: CHAT, PERS: PERS, DATES: DATES, STAGES: STAGES, TRAITS: TRAITS, SCENE: SCENE };
 })();
