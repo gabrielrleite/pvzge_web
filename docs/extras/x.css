@@ -2658,3 +2658,415 @@ body.pvzx-open .mp-menu-account {
   font-size: 13px;
   font-family: var(--mp-font-hand);
 }
+
+/* plant match 2.6: animations, rejection, cinema and richer activities */
+.pvzx-scene.pvzx-playing .pvzx-scene-stage {
+  flex: 1 1 68%;
+}
+.pvzx-scene.pvzx-playing .pvzx-scene-talk {
+  flex: 0 1 16%;
+}
+.pvzx-a-enter {
+  animation: pvzx-enter 0.9s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+@keyframes pvzx-enter {
+  from {
+    transform: translateX(160px) scale(0.7);
+    opacity: 0;
+  }
+}
+.pvzx-a-happy {
+  animation: pvzx-hop 0.6s ease-out 2;
+}
+@keyframes pvzx-hop {
+  40% {
+    transform: translateY(-22px) scale(1.04, 0.96);
+  }
+  70% {
+    transform: translateY(0) scale(1.06, 0.92);
+  }
+}
+.pvzx-a-angry {
+  animation: pvzx-wobble 0.45s linear 2;
+  filter: drop-shadow(0 0 10px rgba(255, 40, 40, 0.8));
+}
+@keyframes pvzx-wobble {
+  25% {
+    transform: translateX(-8px) rotate(-4deg);
+  }
+  75% {
+    transform: translateX(8px) rotate(4deg);
+  }
+}
+.pvzx-a-away {
+  animation: pvzx-away 0.8s ease-out;
+}
+@keyframes pvzx-away {
+  40% {
+    transform: translateX(36px) rotate(8deg) scale(0.94);
+  }
+}
+.pvzx-a-blush {
+  animation: pvzx-blush 1.2s ease-out;
+}
+@keyframes pvzx-blush {
+  30% {
+    filter: drop-shadow(0 0 14px #ff6b9a) saturate(1.4);
+    transform: scale(1.05);
+  }
+}
+.pvzx-a-swoon {
+  animation: pvzx-swoon 1.4s ease-in-out;
+}
+@keyframes pvzx-swoon {
+  30% {
+    transform: rotate(-10deg) scale(1.08);
+    filter: drop-shadow(0 0 16px #ff8fc0);
+  }
+  60% {
+    transform: rotate(6deg) scale(1.04);
+  }
+}
+.pvzx-a-walkout {
+  animation: pvzx-walkout 1.8s ease-in forwards;
+}
+@keyframes pvzx-walkout {
+  15% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: translateX(-340px) rotate(-10deg);
+    opacity: 0;
+  }
+}
+.pvzx-a-slap {
+  animation: pvzx-slapped 0.5s ease-out;
+}
+@keyframes pvzx-slapped {
+  30% {
+    transform: rotate(-14deg) scale(1.1);
+  }
+}
+.pvzx-a-shake {
+  animation: pvzx-shake 0.4s linear;
+}
+@keyframes pvzx-shake {
+  20% {
+    transform: translate(-6px, 2px);
+  }
+  40% {
+    transform: translate(6px, -2px);
+  }
+  60% {
+    transform: translate(-4px, 1px);
+  }
+  80% {
+    transform: translate(4px, -1px);
+  }
+}
+.pvzx-particle {
+  position: absolute;
+  z-index: 4;
+  font-size: 22px;
+  pointer-events: none;
+  animation: pvzx-burst 1.3s ease-out forwards;
+}
+@keyframes pvzx-burst {
+  from {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(1.3);
+    opacity: 0;
+  }
+}
+.pvzx-giftback {
+  position: absolute;
+  z-index: 4;
+  left: 45%;
+  top: 40%;
+  font-size: 40px;
+  pointer-events: none;
+  animation: pvzx-toss 1.5s ease-in forwards;
+}
+@keyframes pvzx-toss {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  40% {
+    transform: translate(60px, -90px) rotate(200deg);
+  }
+  100% {
+    transform: translate(150px, 140px) rotate(540deg);
+    opacity: 0.4;
+  }
+}
+/* invite */
+.pvzx-invite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.pvzx-invite .pvzx-bubble {
+  max-width: 90%;
+}
+.pvzx-invite-pic {
+  height: 140px;
+  margin-top: 20px;
+}
+.pvzx-invite-pic img {
+  max-height: 100%;
+}
+/* in-game pop-ups */
+.pvzx-game-pop {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  z-index: 5;
+  max-width: 86%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2b1608;
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+  animation: pvzx-rise 1.6s ease-out forwards;
+}
+.pvzx-game-pop.pvzx-pop-love {
+  background: #ffe1ee;
+  color: #b0225e;
+}
+.pvzx-game-pop.pvzx-pop-bad {
+  background: #ffe2dc;
+  color: #a12a1a;
+}
+/* cinema */
+.pvzx-cinema {
+  justify-content: flex-start !important;
+  background: radial-gradient(circle at 50% 0%, #3a2140, #0d0710 75%) !important;
+}
+.pvzx-screen {
+  position: relative;
+  width: 90%;
+  height: 40%;
+  margin-top: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #1b2236;
+  box-shadow: 0 0 40px rgba(170, 200, 255, 0.35);
+  animation: pvzx-flicker 2.4s infinite;
+}
+@keyframes pvzx-flicker {
+  50% {
+    filter: brightness(1.08);
+  }
+  52% {
+    filter: brightness(0.85);
+  }
+}
+.pvzx-screen-sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#24305a, #3e4a2a 70%, #2a3a1c);
+}
+.pvzx-screen-zombie {
+  position: absolute;
+  bottom: 14%;
+  right: -40px;
+  font-size: 40px;
+  animation: pvzx-film-walk 9s linear infinite;
+}
+@keyframes pvzx-film-walk {
+  to {
+    right: 110%;
+  }
+}
+.pvzx-screen-flower {
+  position: absolute;
+  bottom: 12%;
+  left: 12%;
+  font-size: 34px;
+  animation: pvzx-hop 1.6s ease-in-out infinite;
+}
+.pvzx-screen-sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+.pvzx-screen.pvzx-screen-love .pvzx-screen-sky {
+  background: linear-gradient(#5a2448, #a3456b 70%, #6b2a4a);
+}
+.pvzx-screen.pvzx-screen-scare .pvzx-screen-zombie {
+  right: 30%;
+  bottom: 0;
+  font-size: 120px;
+  animation: none;
+}
+.pvzx-screen.pvzx-screen-scare {
+  animation: none;
+  filter: brightness(1.6) contrast(1.4);
+}
+.pvzx-seats {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  height: 26%;
+  margin-top: 8px;
+  transition: gap 0.6s;
+}
+.pvzx-seat-you {
+  font-size: 44px;
+}
+.pvzx-seat-bucket {
+  font-size: 30px;
+}
+.pvzx-seat-her {
+  height: 100%;
+  transition: transform 0.6s;
+}
+.pvzx-seat-her img {
+  max-height: 100%;
+}
+.pvzx-seat-her.pvzx-reach {
+  transform: translateX(-26px) rotate(-12deg);
+}
+.pvzx-seats.pvzx-lean {
+  gap: 0;
+}
+.pvzx-seats.pvzx-lean .pvzx-seat-her {
+  transform: rotate(-10deg);
+}
+.pvzx-seats.pvzx-apart {
+  gap: 40px;
+}
+.pvzx-movie-acts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 92%;
+  margin-top: 6px;
+  color: #fff;
+  font-size: 12px;
+}
+/* shooting stall */
+.pvzx-stall {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(#ffd9e8, #ffe9c7 60%, #e7b98a 61%);
+  touch-action: none;
+}
+/* picnic */
+.pvzx-basket {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  margin-left: -28px;
+  font-size: 50px;
+}
+.pvzx-picnic-her {
+  position: absolute;
+  right: 6%;
+  bottom: 6px;
+  height: 34%;
+}
+.pvzx-picnic-her img {
+  max-height: 100%;
+}
+.pvzx-sun.pvzx-gold {
+  filter: drop-shadow(0 0 10px gold) saturate(2);
+  font-size: 46px;
+}
+.pvzx-bee {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: none;
+  font-size: 30px;
+  cursor: pointer;
+  touch-action: none;
+}
+.pvzx-bee.pvzx-shoo {
+  animation: pvzx-shoo 0.4s ease-in forwards;
+}
+@keyframes pvzx-shoo {
+  to {
+    transform: translate(120px, -160px) rotate(40deg);
+    opacity: 0;
+  }
+}
+/* café */
+.pvzx-cafe-her {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 90px;
+}
+.pvzx-cafe-her img {
+  max-height: 100%;
+}
+.pvzx-cafe-her.pvzx-sip {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  height: 120px;
+  transform: translateX(-50%);
+  animation: pvzx-hop 0.8s ease-in-out 2;
+}
+.pvzx-cafe-her.pvzx-sip span {
+  position: absolute;
+  right: -26px;
+  bottom: 10px;
+  font-size: 34px;
+}
+.pvzx-drink {
+  font-size: 30px;
+}
+/* dinner toast */
+.pvzx-glass {
+  position: absolute;
+  top: 40%;
+  font-size: 46px;
+  transition: none;
+}
+.pvzx-glass-her {
+  transform: scaleX(-1);
+}
+/* beach waves */
+.pvzx-wave {
+  position: absolute;
+  left: -100%;
+  right: 0;
+  bottom: 0;
+  height: 26px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0 14px, rgba(120, 200, 255, 0.85) 14px 40px);
+  border-radius: 50% 50% 0 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.pvzx-waving .pvzx-wave {
+  opacity: 1;
+  animation: pvzx-wave 1.5s ease-in-out;
+}
+@keyframes pvzx-wave {
+  50% {
+    transform: translateX(50%);
+    height: 60px;
+  }
+}
+.pvzx-scene-actions.pvzx-off {
+  pointer-events: none;
+  opacity: 0.4;
+}

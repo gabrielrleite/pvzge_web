@@ -731,7 +731,7 @@
     touchBad: { pt: '👆 Achou você atirado demais', en: '👆 Found you too forward', zh: '👆 觉得你太主动了' },
     eventGood: { pt: '{icon} Mandou bem na surpresa', en: '{icon} Handled the surprise', zh: '{icon} 漂亮地应对了意外' },
     eventBad: { pt: '{icon} A surpresa não foi bem', en: '{icon} The surprise went badly', zh: '{icon} 意外处理得不好' },
-    secret: { pt: '🤫 Ela te contou um segredo', en: '🤫 She told you a secret', zh: '🤫 她告诉了你一个秘密' },
+    secret: { pt: '🤫 {g:Ela|Ele|Elu} te contou um segredo', en: '🤫 She told you a secret', zh: '🤫 她告诉了你一个秘密' },
     talkGood: { pt: '⌨️ Conversa livre: arrasou', en: '⌨️ Free talk: nailed it', zh: '⌨️ 自由聊天：很成功' },
     talkBad: { pt: '⌨️ Conversa livre: deslizes', en: '⌨️ Free talk: some slips', zh: '⌨️ 自由聊天：有些失误' },
   });
@@ -845,6 +845,102 @@
       other: { pt: ['Hmm, entendi. 🙂', 'Interessante! Conta mais.', 'Ah, é? 😄'], en: ['Hmm, I see. 🙂', 'Interesting! Tell me more.', 'Oh, really? 😄'], zh: ['嗯，我懂了。🙂', '有意思！多说点。', '真的吗？😄'] },
       repeat: { pt: ['Você já disse isso. 😅'], en: ['You already said that. 😅'], zh: ['你已经说过了。😅'] },
     },
+  };
+
+  /* ------------------------------------------------ texts added in 2.6 */
+
+  // Each place's activity is now a richer, date-like scene of its own.
+  SCENE.places.garden.game = 'picnic';
+  SCENE.places.cinema.game = 'movie';
+  SCENE.places.park.game = 'stall';
+  SCENE.places.cafe.game = 'cafe';
+  SCENE.places.dinner.game = 'dinner';
+  Object.assign(SCENE.games, {
+    picnic: { icon: '🧺', pt: 'Piquenique de sóis', en: 'Sun picnic', zh: '阳光野餐', how: { pt: 'Pegue os sóis com ela e espante as abelhas antes que cheguem na cesta! 15 segundos.', en: 'Catch suns together and shoo the bees before they reach the basket! 15 seconds.', zh: '和她一起接阳光，赶走飞向篮子的蜜蜂！15 秒。' } },
+    movie: { icon: '🎬', pt: 'Sessão de cinema', en: 'Movie night', zh: '电影之夜', how: { pt: 'Escolha os lugares e reaja aos momentos do filme na hora certa.', en: 'Pick the seats and react to the movie’s moments at the right time.', zh: '选座位，并在合适的时机对电影情节做出反应。' } },
+    stall: { icon: '🎯', pt: 'Barraca de tiro', en: 'Shooting stall', zh: '射击摊', how: { pt: 'Puxe a bola para trás e solte (como um estilingue) para derrubar as latas. 4 bolas: ganhe um prêmio para ela!', en: 'Pull the ball back and release (like a slingshot) to knock down the cans. 4 balls: win her a prize!', zh: '像弹弓一样往后拉球再松开，打倒罐子。4 个球：为她赢个奖品！' } },
+    cafe: { icon: '☕', pt: 'Pedido e latte art', en: 'Order and latte art', zh: '点单与拉花', how: { pt: 'Descubra o que ela quer beber pelas dicas e depois desenhe o coração no café dela.', en: 'Guess her drink from the hints, then draw a heart on her coffee.', zh: '根据提示猜她想喝什么，然后在她的咖啡上画爱心。' } },
+    dinner: { icon: '🍽', pt: 'Jantar e brinde', en: 'Dinner and toast', zh: '晚餐与干杯', how: { pt: 'Monte o prato que ela pediu e depois brinde quando as taças se encontrarem.', en: 'Build the plate she ordered, then toast when the glasses meet.', zh: '按她点的菜拼盘，然后在酒杯相碰时干杯。' } },
+  });
+
+  SCENE.reject = {
+    sending: { pt: 'Convite enviado…', en: 'Invite sent…', zh: '邀请已发送…' },
+    accepted: { pt: ['Topo! Te encontro lá 😍', 'Siiim! Já tô me arrumando 💕', 'Combinado! 😊'], en: ['Sure! See you there 😍', 'Yesss! Getting ready already 💕', 'Deal! 😊'], zh: ['好呀！那里见 😍', '好的！我已经在打扮了 💕', '一言为定！😊'] },
+    seenNoReply: { pt: '{name} visualizou e não respondeu. 👀', en: '{name} read it and didn’t reply. 👀', zh: '{name} 已读不回。👀' },
+    place: { pt: ['{place}? Não curto muito... vamos outro dia. 😕', 'Hmm, {place} não é a minha praia. 😕'], en: ['{place}? Not really my thing... another day. 😕', 'Hmm, {place} isn’t my scene. 😕'], zh: ['{place}？我不太喜欢……改天吧。😕', '嗯，{place}不太适合我。😕'] },
+    tooSoon: { pt: ['A gente mal conversou... vamos com calma? 😅', 'Encontro já? Me conquista no papo primeiro. 😏'], en: ['We barely talked... let’s take it slow? 😅', 'A date already? Win me over in the chat first. 😏'], zh: ['我们才聊了几句……慢慢来好吗？😅', '这就约会？先在聊天里打动我吧。😏'] },
+    busy: { pt: ['Hoje não dá, já tenho compromisso. 😅', 'Desculpa, hoje tô sem cabeça. Outro dia? 🙏', 'Não vai rolar hoje. 😶'], en: ['Can’t today, I already have plans. 😅', 'Sorry, not in the mood today. Another day? 🙏', 'Not happening today. 😶'], zh: ['今天不行，我有安排了。😅', '抱歉，今天没心情。改天？🙏', '今天不行。😶'] },
+    refused: { pt: '💔 {name} recusou o convite.', en: '💔 {name} turned down the invite.', zh: '💔 {name} 拒绝了邀请。' },
+    tryOther: { pt: 'Tentar outro lugar', en: 'Try another place', zh: '换个地方' },
+    walkout: { pt: ['Pra mim já deu. Tchau! 👋', 'Quer saber? Vou embora. 😤'], en: ['I’m done. Bye! 👋', 'You know what? I’m leaving. 😤'], zh: ['我受够了。再见！👋', '算了，我走了。😤'] },
+    walkoutHl: { pt: '🚶 {g:Ela|Ele|Elu} foi embora no meio do encontro', en: '🚶 She left in the middle of the date', zh: '🚶 她约会中途离开了' },
+    unmatched: { pt: '💔 {name} desfez o match.', en: '💔 {name} unmatched you.', zh: '💔 {name} 取消了配对。' },
+    slap: { pt: '*TAPA* 👋 Quem você pensa que é?!', en: '*SLAP* 👋 Who do you think you are?!', zh: '*啪* 👋 你以为你是谁？！' },
+    dodge: { pt: '*desvia* Ei, sem abraço por enquanto. 🙅', en: '*dodges* Hey, no hugs for now. 🙅', zh: '*躲开* 嘿，现在还不能抱。🙅' },
+    giftHate: { pt: '{gift}? Sério? Pode ficar pra você. 😒', en: 'A {gift}? Seriously? You can keep it. 😒', zh: '{gift}？认真的吗？你自己留着吧。😒' },
+    giftHateHl: { pt: '{icon} Odiou o presente', en: '{icon} Hated the gift', zh: '{icon} 讨厌这份礼物' },
+  };
+
+  SCENE.movie = {
+    seatsQ: { pt: 'Onde a gente senta?', en: 'Where do we sit?', zh: '我们坐哪儿？' },
+    seats: {
+      back: { icon: '💕', pt: 'Última fileira', en: 'Back row', zh: '最后一排' },
+      middle: { icon: '🎯', pt: 'Meio da sala', en: 'Middle', zh: '中间' },
+      front: { icon: '😵', pt: 'Primeira fileira', en: 'Front row', zh: '第一排' },
+    },
+    seatLove: { pt: 'Lugar perfeito! 😊', en: 'Perfect seats! 😊', zh: '位置完美！😊' },
+    seatMeh: { pt: 'Ok, pode ser.', en: 'Okay, sure.', zh: '好吧，可以。' },
+    seatBad: { pt: 'Aqui? Vou ficar com torcicolo... 😣', en: 'Here? I’ll get a stiff neck... 😣', zh: '这里？脖子会酸的……😣' },
+    subs: { pt: ['🎞 A Noite dos Mortos-Vivos 4', '“Eles estão vindo pelo gramado...”', '“Ninguém planta sozinho esta noite.”', '“Eu sempre te amei, Girassol.”', '🎞 FIM'], en: ['🎞 Night of the Living Dead 4', '“They’re coming across the lawn...”', '“Nobody plants alone tonight.”', '“I always loved you, Sunflower.”', '🎞 THE END'], zh: ['🎞 活死人之夜 4', '“它们正穿过草坪……”', '“今晚没人独自种植。”', '“我一直爱着你，向日葵。”', '🎞 剧终'] },
+    popcornNow: { pt: 'A folha {g:dela|dele|delu} está na pipoca...', en: 'Her leaf is in the popcorn...', zh: '她的叶子伸进了爆米花……' },
+    grab: { pt: '🍿 Pegar pipoca', en: '🍿 Grab popcorn', zh: '🍿 拿爆米花' },
+    touchHands: { pt: '*as folhas se tocam* ...oi. 😳', en: '*your leaves touch* ...hi. 😳', zh: '*叶子碰到了一起* ……嗨。😳' },
+    touchAwk: { pt: '*puxa a folha rápido* Ah... foi mal. 😬', en: '*pulls her leaf back fast* Oh... sorry. 😬', zh: '*迅速缩回叶子* 啊……抱歉。😬' },
+    scare: { pt: '💥 SUSTO! Um zumbi pula na tela!', en: '💥 JUMP SCARE! A zombie leaps at the screen!', zh: '💥 惊吓！屏幕上跳出僵尸！' },
+    scareOpts: [{ k: 'hold', pt: '🍃 Segurar a folha {g:dela|dele|delu}', en: '🍃 Hold her leaf', zh: '🍃 握住她的叶子' }, { k: 'scream', pt: '😱 Gritar junto', en: '😱 Scream along', zh: '😱 一起尖叫' }, { k: 'laugh', pt: '😂 Rir do susto', en: '😂 Laugh at it', zh: '😂 嘲笑这个惊吓' }],
+    whisper: { pt: '*cochicha* Você acha que o girassol sobrevive?', en: '*whispers* Do you think the sunflower survives?', zh: '*小声* 你觉得向日葵能活下来吗？' },
+    whisperOpts: [{ k: 'whisper', pt: '*cochicha de volta* Com certeza, ela é forte.', en: '*whispers back* For sure, she’s strong.', zh: '*小声回答* 当然，她很坚强。' }, { k: 'shh', pt: '🤫 Shhh!', en: '🤫 Shhh!', zh: '🤫 嘘！' }, { k: 'spoil', pt: 'Não, ela morre no final. 😬', en: 'No, she dies at the end. 😬', zh: '不会，她最后死了。😬' }],
+    romance: { pt: '💞 Cena romântica no filme...', en: '💞 A romantic scene in the movie...', zh: '💞 电影里的浪漫场景……' },
+    lean: { pt: '😌 Encostar o ombro', en: '😌 Lean on her shoulder', zh: '😌 靠在她肩上' },
+    leanYes: { pt: '*encosta de volta* 💕', en: '*leans back* 💕', zh: '*也靠过来* 💕' },
+    leanNo: { pt: '*se afasta* Hm... 😐', en: '*moves away* Hm... 😐', zh: '*躲开* 嗯……😐' },
+    good: { pt: '😊', en: '😊', zh: '😊' },
+    late: { pt: '...', en: '...', zh: '……' },
+  };
+
+  SCENE.stall = {
+    prizes: { pt: ['nada... 😅', 'um chaveiro de girassol 🌻', 'um ursinho 🧸', 'o ursão gigante 🧸✨'], en: ['nothing... 😅', 'a sunflower keychain 🌻', 'a teddy 🧸', 'the giant teddy 🧸✨'], zh: ['什么也没有……😅', '向日葵钥匙扣 🌻', '小熊 🧸', '超大熊 🧸✨'] },
+    won: { pt: 'Você ganhou {prize} para ela!', en: 'You won her {prize}!', zh: '你为她赢得了{prize}！' },
+    balls: { pt: 'Bolas: {n}', en: 'Balls: {n}', zh: '球：{n}' },
+  };
+
+  SCENE.picnic = {
+    bee: { pt: 'Uma abelha chegou na cesta! 🐝', en: 'A bee got into the basket! 🐝', zh: '蜜蜂飞进篮子了！🐝' },
+    golden: { pt: 'Sol dourado! ✨', en: 'Golden sun! ✨', zh: '金色阳光！✨' },
+  };
+
+  SCENE.cafe = {
+    drinks: {
+      cappuccino: { icon: '☕', pt: 'Cappuccino', en: 'Cappuccino', zh: '卡布奇诺', hint: { pt: 'Quero algo quentinho com espuma...', en: 'I want something hot with foam...', zh: '我想要热的、带奶泡的……' } },
+      tea: { icon: '🍵', pt: 'Chá verde', en: 'Green tea', zh: '绿茶', hint: { pt: 'Algo leve, que acalme... e verde, claro. 🌿', en: 'Something light and calming... and green, of course. 🌿', zh: '清淡、让人平静的……当然是绿色的。🌿' } },
+      boba: { icon: '🧋', pt: 'Chá com bolinhas', en: 'Bubble tea', zh: '珍珠奶茶', hint: { pt: 'Algo gelado, doce e com bolinhas pra mastigar!', en: 'Something cold, sweet and with chewy pearls!', zh: '冰的、甜的、还有可以嚼的珍珠！' } },
+      milk: { icon: '🥛', pt: 'Leite com mel', en: 'Milk with honey', zh: '蜂蜜牛奶', hint: { pt: 'Nada de café... algo bem docinho, com mel. 🍯', en: 'No coffee... something sweet, with honey. 🍯', zh: '不要咖啡……要甜甜的，加蜂蜜。🍯' } },
+    },
+    right: { pt: 'Exatamente o que eu queria! 😍', en: 'Exactly what I wanted! 😍', zh: '正是我想要的！😍' },
+    wrong: { pt: 'Ah... não era bem isso, mas obrigad{g:a|o|e}. 😅', en: 'Oh... not quite, but thanks. 😅', zh: '啊……不太对，不过谢谢。😅' },
+    sipLove: { pt: '*toma um gole* Que coração lindo! 🥰', en: '*sips* What a pretty heart! 🥰', zh: '*喝了一口* 好漂亮的爱心！🥰' },
+    sipOk: { pt: '*toma um gole* Hmm, é... um coração? 😄', en: '*sips* Hmm, is that... a heart? 😄', zh: '*喝了一口* 嗯，这是……爱心吗？😄' },
+  };
+
+  SCENE.dinner = {
+    toast: { pt: 'Brinde! Toque quando as taças se encontrarem 🥂', en: 'Toast! Tap when the glasses meet 🥂', zh: '干杯！酒杯相碰时点击 🥂' },
+    clink: { pt: '*tim-tim* 🥂✨', en: '*clink* 🥂✨', zh: '*叮* 🥂✨' },
+    spill: { pt: '*derrama um pouco* Ops! 😅', en: '*spills a bit* Oops! 😅', zh: '*洒了一点* 哎呀！😅' },
+  };
+
+  SCENE.beach = {
+    wave: { pt: '🌊 Onda chegando!', en: '🌊 Wave coming!', zh: '🌊 浪来了！' },
+    photo: { pt: '📸 Ela tirou uma foto do castelo!', en: '📸 She took a photo of the castle!', zh: '📸 她给沙堡拍了张照！' },
   };
 
   // Personalities: the openers and reactions of each plant, her favorite
