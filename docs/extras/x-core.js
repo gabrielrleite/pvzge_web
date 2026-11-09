@@ -14,7 +14,7 @@
 
   var MP = window.PvZMP;
   var X = (window.PvZX = new MP.Emitter());
-  X.VERSION = '2.6.0';
+  X.VERSION = '2.7.0';
 
   /* ------------------------------------------------------------ storage */
 
@@ -1155,6 +1155,26 @@
     },
     readDms: function (name) {
       return api.request('POST', '/match/dm/read', { with: name });
+    },
+    duo: function () {
+      return api.request('GET', '/match/duo').then(function (r) {
+        return r.duo;
+      });
+    },
+    duoInvite: function (to, plant, place) {
+      return api.request('POST', '/match/duo', { to: to, plant: plant, place: place }).then(function (r) {
+        return r.duo;
+      });
+    },
+    duoAnswer: function (id, accept, plant) {
+      return api.request('POST', '/match/duo/' + encodeURIComponent(id) + '/answer', { accept: !!accept, plant: plant || '' }).then(function (r) {
+        return r.duo;
+      });
+    },
+    duoAct: function (id, body) {
+      return api.request('POST', '/match/duo/' + encodeURIComponent(id) + '/act', body).then(function (r) {
+        return r.duo;
+      });
     },
     blockPlayer: function (name, block) {
       return api.request('POST', '/match/block', { name: name, block: block !== false });

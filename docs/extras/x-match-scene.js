@@ -95,12 +95,21 @@
     X.store.set('matchSceneDays', d);
   }
 
-  function placeLock(id, r) {
+  function placeLock(id, r, code) {
     var need = SC.places[id].need;
     if (need == null) return '';
     if (!r) return L(TXT.dateNeedPartner);
     if (I.relStage(r) < need) return L(TXT.dateNeed, { stage: I.stageLabel(need) });
+    if (id === 'proposal') {
+      if (r.married || (I.proposedTo && I.proposedTo(code))) return L(SC.prog.proposed);
+      if (!(I.hasRing && I.hasRing())) return L(SC.prog.needRing);
+    }
     return '';
+  }
+
+  // Texts of a place with the world of the trip filled in.
+  function placeVars(s) {
+    return s && s.world ? { world: L(s.world), icon: s.world.icon } : {};
   }
 
   /* --------------------------------------------------------- the planner */
@@ -133,17 +142,22 @@
     sheet.addEventListener('wheel', function (e) {
       e.stopPropagation();
     });
+    if (I.progBar) sheet.appendChild(I.progBar(plan));
     if (plan.tab === 'adventure') {
       sheet.appendChild(el('p.pvzx-small', { text: L(U.adventureDesc) }));
       return I.adventureList(p, sheet);
     }
+    if (plan.tab === 'shop' && I.shopList) return I.shopList(sheet);
+    if (plan.tab === 'missions' && I.missionList) return I.missionList(sheet);
+    if (!(I.ownsLook ? I.ownsLook(plan.look) : SC.looks[plan.look])) plan.look = 'casual';
+    if (plan.gift && I.ownsGift && !I.ownsGift(plan.gift)) plan.gift = '';
     sheet.appendChild(el('p.pvzx-small', { text: L(TXT.inviteDesc, { name: p.name }) }));
     sheet.appendChild(el('p.pvzx-small', { text: '✨ ' + L(U.games2) }));
     // 1. Where
     sheet.appendChild(el('h4', { text: L(U.where) }));
     Object.keys(SC.places).forEach(function (id) {
       var pl = SC.places[id];
-      var lock = placeLock(id, r);
+      var lock = placeLock(id, r, p.code);
       var who = (pl.loves.pers || [])
         .map(function (k) {
           return PERS[k].icon + ' ' + I.gfix(L(PERS[k].name), 'f');
@@ -172,7 +186,9 @@
     // 2. Look
     sheet.appendChild(el('h4', { text: L(U.look) }));
     sheet.appendChild(
-      I.choiceChips(Object.keys(SC.looks), plan.look, function (v) {
+      I.choiceChips(Object.keys(SC.looks).filter(function (v) {
+        return I.ownsLook ? I.ownsLook(v) : !SC.looks[v].shop;
+      }), plan.look, function (v) {
         plan.look = v;
         I.render();
       }, function (v) {
@@ -182,7 +198,9 @@
     // 3. Gift
     sheet.appendChild(el('h4', { text: L(U.gift) + ' (♥ ' + I.likesLeft() + ')' }));
     sheet.appendChild(
-      I.choiceChips([''].concat(Object.keys(SC.gifts)), plan.gift, function (v) {
+      I.choiceChips([''].concat(Object.keys(SC.gifts).filter(function (v) {
+        return I.ownsGift ? I.ownsGift(v) : !SC.gifts[v].shop;
+      })), plan.gift, function (v) {
         if (v && SC.gifts[v].cost > I.likesLeft()) {
           if (MP.ui) MP.ui.toast(L(U.notEnough), 'bad');
           return;
@@ -200,7 +218,7 @@
     if (tired || maxLock) sheet.appendChild(el('p.pvzx-small.pvzx-seek', { text: maxLock || L(U.tired, { name: p.name }) }));
     sheet.appendChild(
       el('div.pvzx-file-actions', null, [
-        el('button.mp-btn.mp-green', { text: L(U.go), disabled: tired || !!maxLock || !!placeLock(plan.place, r), onclick: function () {
+        el('button.mp-btn.mp-green', { text: L(U.go), disabled: tired || !!maxLock || !!placeLock(plan.place, r, p.code), onclick: function () {
           I.inviteDate(p, plan);
         } }),
       ]),
@@ -304,7 +322,15 @@
     dinner: ['spill', 'ex'],
     park: ['zombie', 'rain', 'spill', 'ex'],
     cafe: ['rain', 'spill', 'ex'],
+    aquarium: ['spill', 'ex'],
+    festival: ['zombie', 'rain', 'spill', 'ex'],
+    museum: ['spill', 'ex'],
+    trip: ['zombie', 'rain', 'ex'],
+    proposal: ['rain'],
+    honeymoon: ['rain', 'zombie'],
   };
+  // Looks from the shop each personality loves.
+  var PLOOK_SHOP = { sweet: 'necklace', shy: 'scarf', sassy: 'crown', nerd: 'scarf', brave: 'mask', drama: 'crown' };
   // Gifts each personality dislikes (she gives them back).
   var PGIFT_HATE = { sweet: 'book', shy: 'choc', sassy: 'water', nerd: 'plush', brave: 'flowers', drama: 'water' };
   var PTOUCH = {
@@ -320,6 +346,24 @@
     if (p.roles && p.roles.sun) return 'sunbit';
     if (p.family === 'Cold' || p.family === 'Poison') return 'dew';
     return 'cookie';
+  }
+
+  function sfx(name) {
+    if (I.sfx) I.sfx(name);
+  }
+
+  // A real pose of the plant for a moment (attack, food, water…), when the
+  // photo shoot got it.
+  function posePlay(s, name, ms) {
+    var p = s.p;
+    if (!(p.photos && p.photos[name])) return;
+    s.pose = name;
+    clearTimeout(s.poseTimer);
+    s.poseTimer = setTimeout(function () {
+      if (I.scene !== s || s.pose !== name) return;
+      s.pose = 'idle';
+      if (!s.playing) I.sceneRender();
+    }, ms || 1500);
   }
 
   function say(s, text, from) {
@@ -340,14 +384,20 @@
     var steps = ['arrive', 'beat1', 'branch', 'game0', 'event', 'beat2', 'game1', 'talk', 'end', 'result'].filter(function (st) {
       return st !== 'event' || event;
     });
+    var world = null;
+    if (place === 'trip' && SC.worlds) {
+      var wid = pick(Object.keys(SC.worlds));
+      world = Object.assign({ id: wid }, SC.worlds[wid]);
+    }
     var s = (I.scene = {
+      world: world,
       p: p, place: place, look: look, gift: gift, mood: 30, steps: steps, pos: 0, step: 'arrive', sub: null,
       hl: [], lines: [], chat: 0, games: [pl.game, second], gamePts: [], event: event,
       touches: {}, touchTotal: 0, touchScore: 0, snacks: 0, taps: [], pose: 'idle',
       talkCount: 0, talkScore: 0, talkSeen: {},
     });
     var pers = persOf(p);
-    say(s, L(pl.arrive));
+    say(s, L(pl.arrive, placeVars(s)));
     var feel = placeFeel(p, place);
     if (feel === 'love') {
       mood(15);
@@ -362,7 +412,11 @@
       s.hl.push(L(SC.hl.placeOk, { icon: pl.icon }));
     }
     var lk = SC.looks[look];
-    if (PLOOK[pers].good === look) {
+    if (PLOOK_SHOP[pers] === look) {
+      mood(14);
+      say(s, L(SC.react.lookLove, { look: low(L(lk)) }));
+      s.hl.push(L(SC.hl.lookLove, { icon: lk.icon }));
+    } else if (PLOOK[pers].good === look) {
       mood(10);
       say(s, L(SC.react.lookLove, { look: low(L(lk)) }));
       s.hl.push(L(SC.hl.lookLove, { icon: lk.icon }));
@@ -380,7 +434,7 @@
         say(s, L(SC.reject.giftHate, { gift: low(L(g)) }));
         s.hl.push(L(SC.reject.giftHateHl, { icon: g.icon }));
         s.giftBack = g.icon;
-      } else if (favGift(p) === gift) {
+      } else if (favGift(p) === gift || (g.loves && g.loves.indexOf(pers) >= 0)) {
         mood(12 + (lovesGifts ? 5 : 0));
         say(s, L(SC.react.giftLove, { gift: low(L(g)) }));
         s.hl.push(L(SC.hl.giftLove, { icon: g.icon }));
@@ -395,6 +449,9 @@
     }
     say(s, L(SC.ui.touchHint), 'sys');
     s.started = true;
+    if (I.sceneMusic) I.sceneMusic(place, world && world.music);
+    if (I.zombieWarm) I.zombieWarm();
+    sfx('playWorldEnterWind');
     if (!I.sceneEl) I.sceneEl = el('div.pvzx-scene');
     if (I.node && I.sceneEl.parentNode !== I.node) I.node.appendChild(I.sceneEl);
     I.render();
@@ -434,6 +491,7 @@
 
   // Reactions: classes on the plant and particles over it.
   var FX_PARTICLES = { happy: ['❤️', '💕', '✨'], blush: ['💗'], angry: ['💢', '💔'], away: ['💦'], walkout: ['💨', '👋'], slap: ['👋', '💥'], swoon: ['💖', '💞', '✨'] };
+  var FX_SOUND = { happy: 'playPlantGrow', angry: 'playCardChooseFailed', walkout: 'playLevelTaskFail', slap: 'playArmorHitShield', swoon: 'playLevelTaskComplete', blush: 'playRhythmHit' };
   I.playFx = function playFx(s) {
     var box = I.sceneEl;
     if (!box || !s.fx || !s.fx.length) return;
@@ -447,6 +505,7 @@
             pop.remove();
           }, 1200);
         }
+        if (f.kind) sfx(FX_SOUND[f.kind]);
         if (!plant || !f.kind) return;
         plant.classList.remove('pvzx-a-happy', 'pvzx-a-angry', 'pvzx-a-blush', 'pvzx-a-away', 'pvzx-a-swoon');
         void plant.offsetWidth;
@@ -485,7 +544,7 @@
     var p = s.p;
     var pl = SC.places[s.place];
     var r = I.partners()[p.code];
-    if (s.step === 'beat1' || s.step === 'beat2') say(s, L(pl.beats[s.step === 'beat1' ? 0 : 1].line));
+    if (s.step === 'beat1' || s.step === 'beat2') say(s, L(pl.beats[s.step === 'beat1' ? 0 : 1].line, placeVars(s)));
     else if (s.step === 'branch') {
       if (s.b1 === 'good') {
         var list = SC.branch.secrets[persOf(p)];
@@ -502,9 +561,14 @@
       var exName = X.plantName(pick(MP.allPlants()));
       say(s, ev.icon + ' ' + L(ev.line, { ex: exName, name: p.name }), 'sys');
       s.eventStart = Date.now();
+      sfx({ zombie: 'playAwooga', rain: 'playSkyThunderSound', spill: 'playWaterSplash', ex: 'playZombieTooCloseWarn' }[s.event]);
+      if (s.event === 'rain') posePlay(s, 'water', 2500);
     } else if (s.step === 'talk') say(s, L(SC.ui.talkTitle), 'sys');
-    else if (s.step === 'end') say(s, L(SC.react.endQ));
+    else if (s.step === 'end') say(s, L(s.place === 'proposal' ? SC.propose.endQ : SC.react.endQ));
     else if (s.step === 'result') finish(s, false);
+    if (s.step === 'event' && s.event === 'rain') s.weather = 'rain';
+    else if (s.step === 'beat2' || s.step === 'end') s.weather = '';
+    walkTo(s);
     I.sceneRender();
   }
 
@@ -639,6 +703,7 @@
         s.touchScore++;
         say(s, Lp(T.snackLove));
         pose('food');
+        if (I.progEvent) I.progEvent('snack');
       } else {
         mood(3);
         say(s, Lp(T.snackOk));
@@ -843,7 +908,29 @@
 
   /* ------------------------------------------------------------ ending */
 
+  // The proposal: a yes needs a good date; a no keeps the ring.
+  function propose(s) {
+    var PR = SC.propose;
+    say(s, L(PR.kneel), 'me');
+    if (s.mood >= 55) {
+      mood(10);
+      say(s, L(PR.yes));
+      s.hl.push(L(PR.hlYes));
+      s.zoom = true;
+      s.proposedOk = true;
+      posePlay(s, 'food', 3000);
+      s.fx = (s.fx || []).concat([{ kind: 'swoon' }, { kind: 'happy' }]);
+    } else {
+      mood(-10);
+      say(s, L(PR.no));
+      s.hl.push(L(PR.hlNo));
+    }
+    s.sub = 'done';
+    I.sceneRender();
+  }
+
   function goodbye(s, kind) {
+    if (kind === 'propose') return propose(s);
     var R = SC.react;
     say(s, L(kind === 'kiss' ? R.endKiss : kind === 'hug' ? R.endHug : R.endShake), 'me');
     var high = s.mood >= 70;
@@ -852,11 +939,15 @@
       if (high) {
         mood(6);
         reply = R.endKissYes;
+        s.zoom = true;
+        if (I.progEvent) I.progEvent('kiss');
+        posePlay(s, 'food', 2600);
         s.fx = (s.fx || []).concat([{ kind: 'swoon' }]);
       } else if (s.mood < 40) {
         // Way too soon: a slap.
         mood(-10);
         reply = SC.reject.slap;
+        posePlay(s, 'attack', 1200);
         s.fx = (s.fx || []).concat([{ kind: 'slap' }]);
       } else {
         mood(-8);
@@ -890,6 +981,7 @@
     var stars = quit ? 0 : starsOf(s.mood);
     s.stars = stars;
     s.step = 'result';
+    if (!quit) sfx(stars > 0 ? 'playLevelNodeFinish' : 'playLevelTaskFail');
     if (s.chat > 0) s.hl.push(L(SC.hl.chatGood));
     else if (s.chat < 0) s.hl.push(L(SC.hl.chatBad));
     if (s.touchScore > 0) s.hl.push(L(SC.hl.touchGood));
@@ -899,7 +991,15 @@
       var pts = s.gamePts.reduce(function (a, b) {
         return a + b;
       }, 0);
-      s.fresh = I.dateSuccess(p.code, s.place, stars, false, { place: s.place, stars: stars, at: Date.now(), game: pts });
+      s.fresh = I.dateSuccess(p.code, s.place, stars, false, { place: s.place, stars: stars, at: Date.now(), game: pts, world: s.world ? s.world.id : undefined });
+      if (I.progEvent) {
+        s.tickets = I.progEvent('date', { place: s.place, stars: stars });
+        if (s.talkCount && s.talkScore > 0) I.progEvent('talk');
+      }
+      if (s.proposedOk && I.acceptProposal) {
+        I.acceptProposal(p.code);
+        I.later(p.code, L(SC.propose.msg), 5000);
+      }
       if (s.secretShared) {
         var ps = I.partners();
         var r = ps[p.code];
@@ -946,6 +1046,7 @@
       clearTimeout(s.tapTimer);
     }
     I.scene = null;
+    if (I.sceneMusic) I.sceneMusic(null);
     if (I.sceneEl) I.sceneEl.remove();
     I.sceneEl = null;
     I.render();
@@ -958,6 +1059,27 @@
 
   function btn(cls, text, fn) {
     return el('button.' + cls, { text: text, onclick: fn });
+  }
+
+  // The illustrated place (one canvas per date, kept between redraws).
+  function sceneArt(s) {
+    if (!I.sceneArt) return el('div.pvzx-scene-deco', { text: SC.places[s.place].deco });
+    if (!s.art) {
+      s.art = I.sceneArt(s.place, { landmark: s.world && s.world.icon, alive: function () {
+        return I.scene === s;
+      } });
+    }
+    return s.art;
+  }
+
+  // Between steps the two of you walk a little: the scene scrolls and both
+  // bob; the new step's talk and choices fade in after it.
+  var WALK_STEPS = { beat1: 1, game0: 1, beat2: 1, talk: 1, end: 1 };
+  function walkTo(s) {
+    if (!WALK_STEPS[s.step] || !I.artWalk) return;
+    I.artWalk(1300);
+    s.walkFx = Date.now() + 1300;
+    sfx('playCameraMove');
   }
 
   I.sceneRender = function sceneRender() {
@@ -994,7 +1116,7 @@
       var plantNode = el('div.pvzx-scene-plant.pvzx-touchable', null, [plantPic(p, s.pose)]);
       attachTouch(plantNode, s);
       stage = el('div.pvzx-scene-stage', null, [
-        el('div.pvzx-scene-deco', { text: pl.deco }),
+        sceneArt(s),
         plantNode,
         el('div.pvzx-scene-you', { text: '🧑‍🌾' + SC.looks[s.look].icon + (s.gift ? SC.gifts[s.gift].icon : '') }),
         snackTray(s, plantNode),
@@ -1042,6 +1164,11 @@
             mood(Math.round(points));
             s.hl.push(L(SC.hl.game, { icon: g.icon, game: L(g), n: points }));
             say(s, L(points >= 12 ? SC.react.gameGood : SC.react.gameMeh));
+            if (points >= 12) {
+              sfx('playLevelTaskComplete');
+              posePlay(s, 'food', 1800);
+            }
+            if (I.progEvent) I.progEvent('game', points);
             I.sceneRender();
           }, ctxOf(s));
         }));
@@ -1060,6 +1187,7 @@
               if (I.scene !== s) return;
               s.playing = false;
               say(s, L(won ? ev.win : ev.lose));
+              if (won) posePlay(s, 'attack', 1600);
               eventDone(s, won ? 10 : -8, won ? 'good' : 'bad');
             });
           }));
@@ -1117,7 +1245,9 @@
     } else if (s.step === 'end') {
       if (s.sub === 'done') next1();
       else {
-        [['kiss', SC.react.endKiss], ['hug', SC.react.endHug], ['shake', SC.react.endShake]].forEach(function (k) {
+        var ends = [['kiss', SC.react.endKiss], ['hug', SC.react.endHug], ['shake', SC.react.endShake]];
+        if (s.place === 'proposal') ends = [['propose', SC.propose.kneel], ['hug', SC.propose.wait]];
+        ends.forEach(function (k) {
           actions.appendChild(btn('pvzx-chat-opt', L(k[1]), function () {
             goodbye(s, k[0]);
           }));
@@ -1134,6 +1264,16 @@
     if (s.typing) talk.appendChild(el('div.pvzx-bubble.pvzx-from-them.pvzx-typing', { text: L(TXT.typing) }));
     box.replaceChildren(meter, stage, talk, actions);
     box.classList.toggle('pvzx-playing', !!s.playing);
+    var walking = !s.playing && s.walkFx && Date.now() < s.walkFx;
+    stage.classList.toggle('pvzx-walking', !!walking);
+    if (walking) {
+      actions.classList.add('pvzx-late');
+      clearTimeout(s.walkTimer);
+      s.walkTimer = setTimeout(function () {
+        if (stage.isConnected) stage.classList.remove('pvzx-walking');
+      }, s.walkFx - Date.now());
+    }
+    if (s.zoom && !s.playing) stage.classList.add('pvzx-zoom');
     setTimeout(function () {
       talk.scrollTop = talk.scrollHeight;
     }, 0);
@@ -1185,6 +1325,7 @@
         }),
       ),
       s.fresh ? el('p.pvzx-good', { text: L(TXT.dateWon, { name: s.p.name }) }) : null,
+      s.tickets ? el('p.pvzx-good', { text: L(SC.prog.won, { n: s.tickets }) }) : null,
       s.unmatched ? el('p.pvzx-seek', { text: L(SC.reject.unmatched, { name: s.p.name }) }) : null,
       btn('mp-btn.mp-green', L(U.back), I.closeScene),
     ]);
@@ -1211,9 +1352,12 @@
         if (now < z.at || z.hp <= 0) return;
         if (!z.node) {
           z.x = w - 10;
-          z.node = el('button.pvzx-zombie', { text: '🧟', style: 'top:' + (18 + z.row * 22) + '%' });
+          z.node = el('button.pvzx-zombie', { style: 'top:' + (18 + z.row * 22) + '%' });
+          if (I.zombieArt) I.zombieArt(['tutorial', 'tutorial_armor1', 'tutorial_armor2'][z.row % 3], z.node);
+          else z.node.textContent = '🧟';
           z.node.addEventListener('pointerdown', function (e) {
             e.preventDefault();
+            sfx(z.hp > 1 ? 'playArmorHitPlastic' : 'playZombieLimbPop');
             z.hp--;
             z.node.classList.add('pvzx-hit');
             setTimeout(function () {

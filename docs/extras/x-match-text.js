@@ -943,6 +943,282 @@
     photo: { pt: '📸 Ela tirou uma foto do castelo!', en: '📸 She took a photo of the castle!', zh: '📸 她给沙堡拍了张照！' },
   };
 
+  /* ------------------------------------------------ texts added in 2.7 */
+
+  // New places, the trip's worlds, the shop (tickets), weekly missions, the
+  // proposal and the honeymoon.
+  Object.assign(SCENE.places, {
+    aquarium: {
+      icon: '🐠', game: 'fish', bg: 'linear-gradient(#0b3d66, #0d6f9c 60%, #0a2c4d)', deco: '🐠 🐙 🐚 🫧',
+      name: { pt: 'Aquário do Zumbi Marinho', en: 'Sea Zombie Aquarium', zh: '海洋僵尸水族馆' },
+      arrive: { pt: 'Olha o tamanho desse tanque! Acho que vi um Snorkel nadando lá no fundo. 🐠', en: 'Look at the size of this tank! I think I saw a Snorkel swimming at the bottom. 🐠', zh: '这个水箱好大！我好像看到潜水僵尸在底下游。🐠' },
+      beats: [
+        { line: { pt: 'Os peixes ficam brilhando no escuro... parece um céu debaixo d’água. ✨', en: 'The fish glow in the dark... it looks like an underwater sky. ✨' },
+          romantic: { pt: 'O único brilho que eu tô vendo é o seu.', en: 'The only glow I can see is yours.' },
+          funny: { pt: 'Aquele ali tá me encarando igual zumbi na janela. 🐟', en: 'That one’s staring at me like a zombie at the window. 🐟' },
+          sincere: { pt: 'Eu me sinto calm{u:a|o|e} aqui. Obrigad{u:a|o|e} por me trazer.', en: 'I feel calm here. Thanks for bringing me.' },
+          bold: { pt: 'Se a gente mergulhasse agora, quem segura a respiração mais tempo? 😏', en: 'If we dived in now, who could hold their breath longer? 😏' } },
+        { line: { pt: 'Dizem que os cavalos-marinhos ficam juntos para sempre. 🐴🌊', en: 'They say seahorses stay together forever. 🐴🌊' },
+          romantic: { pt: 'Eu também sou do tipo para sempre.', en: 'I’m the forever kind too.' },
+          funny: { pt: 'E o macho é que fica grávido! Imagina uma Ervilha grávida. 😂', en: 'And the male gets pregnant! Imagine a pregnant Peashooter. 😂' },
+          sincere: { pt: 'Que bonito... eu queria uma coisa assim.', en: 'That’s beautiful... I’d like something like that.' },
+          bold: { pt: 'Então já sabe: agora você é meu cavalo-marinho.', en: 'So you know: you’re my seahorse now.' } },
+      ],
+      loves: { pers: ['shy', 'nerd'], fam: ['Cold', 'Electricity'] }, hates: { fam: ['Fire'] },
+    },
+    festival: {
+      icon: '🏮', game: 'fireworks', need: 0, bg: 'linear-gradient(#120a2e, #3b1450 60%, #1b0c24)', deco: '🏮 🎆 🍡 🎐',
+      name: { pt: 'Festival das Lanternas', en: 'Lantern Festival', zh: '灯笼节' },
+      arrive: { pt: 'Quanta lanterna! E tem bolinho de arroz! Vamos ver os fogos? 🏮', en: 'So many lanterns! And rice cakes! Shall we watch the fireworks? 🏮', zh: '好多灯笼！还有糯米团子！一起看烟花吗？🏮' },
+      beats: [
+        { line: { pt: 'Escreve um desejo na lanterna? Eu já escrevi o meu... mas é segredo. 🏮', en: 'Write a wish on the lantern? I already wrote mine... but it’s a secret. 🏮' },
+          romantic: { pt: 'Escrevi o seu nome. Só isso.', en: 'I wrote your name. Just that.' },
+          funny: { pt: '"Que os zumbis aprendam a bater na porta." 😂', en: '"May zombies learn to knock on the door." 😂' },
+          sincere: { pt: 'Desejei que esse festival se repita com você ano que vem.', en: 'I wished for this festival again with you next year.' },
+          bold: { pt: 'Eu não desejo, eu prometo: o próximo festival a gente organiza.', en: 'I don’t wish, I promise: we’ll run the next festival.' } },
+        { line: { pt: 'Um dragão de papel tá passando! Segura minha folha pra eu não me perder! 🐉', en: 'A paper dragon is passing! Hold my leaf so I don’t get lost! 🐉' },
+          romantic: { pt: 'Segurando. E não vou soltar.', en: 'Holding it. And I won’t let go.' },
+          funny: { pt: 'Esse dragão tem mais pernas que uma Centopeia Zumbi.', en: 'That dragon has more legs than a Zombie Centipede.' },
+          sincere: { pt: 'Também fico um pouco nervos{u:a|o|e} com multidão. Fica pertinho.', en: 'Crowds make me a bit nervous too. Stay close.' },
+          bold: { pt: 'Bora entrar embaixo do dragão e dançar junto!', en: 'Let’s get under the dragon and dance along!' } },
+      ],
+      loves: { pers: ['drama', 'brave'], fam: ['Explosive', 'Fire'] }, hates: { pers: ['shy'] },
+    },
+    museum: {
+      icon: '🏛', game: 'museum', bg: 'linear-gradient(#efe6d2, #d8c7a2 70%, #9c8566)', deco: '🏛 🖼 🗿 🏺',
+      name: { pt: 'Museu de História Natural', en: 'Natural History Museum', zh: '自然历史博物馆' },
+      arrive: { pt: 'Tem uma ala inteira sobre plantas lendárias! E um esqueleto de dinossauro. 🦖', en: 'There’s a whole wing on legendary plants! And a dinosaur skeleton. 🦖', zh: '有一整个传奇植物展区！还有恐龙骨架。🦖' },
+      beats: [
+        { line: { pt: 'Esse quadro é o Dr. Zomboss jovem. Ele era até bonitinho! 🖼', en: 'This painting is a young Dr. Zomboss. He was kind of cute! 🖼' },
+          romantic: { pt: 'Nenhum quadro daqui chega perto de você.', en: 'No painting here comes close to you.' },
+          funny: { pt: 'O cabelo dele já era um desastre naquela época. 😂', en: 'His hair was a disaster even back then. 😂' },
+          sincere: { pt: 'Fico pensando no que fez ele virar vilão...', en: 'I wonder what turned him into a villain...' },
+          bold: { pt: 'Um dia vai ter um quadro nosso aqui. Do lado vencedor.', en: 'One day there’ll be a painting of us here. On the winning side.' } },
+        { line: { pt: 'Psiu! O guarda tá olhando. Acho que a gente tá rindo alto demais. 🤫', en: 'Shh! The guard is looking. I think we’re laughing too loud. 🤫' },
+          romantic: { pt: '*sussurra* Então vou falar baixinho: adoro estar com você.', en: '*whispers* Then I’ll say it quietly: I love being with you.' },
+          funny: { pt: 'Finge que é estátua! *congela* 🗿', en: 'Pretend to be a statue! *freezes* 🗿' },
+          sincere: { pt: 'Desculpa, é que com você eu fico à vontade demais.', en: 'Sorry, I just feel too comfortable with you.' },
+          bold: { pt: 'Deixa olhar. Não é todo dia que ele vê um casal desses.', en: 'Let him look. He doesn’t see a couple like us every day.' } },
+      ],
+      loves: { pers: ['nerd', 'sweet'], fam: ['Magic', 'Defence'] }, hates: { pers: ['brave'] },
+    },
+    trip: {
+      icon: '✈️', game: 'souvenir', need: 1, bg: 'linear-gradient(#7fc8ff, #c9ecff 60%, #ffffff)', deco: '✈️ 🧳 🗺 📸',
+      name: { pt: 'Viagem pelos mundos', en: 'Trip through the worlds', zh: '世界之旅' },
+      arrive: { pt: 'Malas prontas! Destino de hoje: {world}! {icon}', en: 'Bags packed! Today’s destination: {world}! {icon}', zh: '行李收拾好了！今天的目的地：{world}！{icon}' },
+      beats: [
+        { line: { pt: 'Nunca pensei que ia conhecer {world}... e logo com você. {icon}', en: 'I never thought I’d see {world}... and with you of all people. {icon}' },
+          romantic: { pt: 'Qualquer mundo fica bonito com você do lado.', en: 'Any world looks beautiful with you by my side.' },
+          funny: { pt: 'Só falta os zumbis daqui também quererem foto com a gente. 📸', en: 'Now the zombies here will want a photo with us too. 📸' },
+          sincere: { pt: 'Obrigad{u:a|o|e} por topar essa aventura comigo.', en: 'Thanks for going on this adventure with me.' },
+          bold: { pt: 'Próxima parada: o mundo mais perigoso que existir!', en: 'Next stop: the most dangerous world there is!' } },
+        { line: { pt: 'A gente podia morar aqui, né? Só nós dois e uma horta. 🏡', en: 'We could live here, right? Just us and a garden. 🏡' },
+          romantic: { pt: 'Minha casa é onde você estiver.', en: 'Home is wherever you are.' },
+          funny: { pt: 'E quem vai pagar o aluguel? Os zumbis? 😂', en: 'And who pays the rent? The zombies? 😂' },
+          sincere: { pt: 'Eu pensaria nisso com carinho... de verdade.', en: 'I’d really think about it... truly.' },
+          bold: { pt: 'Fechado. Eu planto, você protege.', en: 'Deal. I plant, you protect.' } },
+      ],
+      loves: { pers: ['sassy', 'brave'], fam: ['Lobber', 'Peashooter'] }, hates: { fam: ['Shadow'] },
+    },
+    proposal: {
+      icon: '💍', game: 'photo', need: 2, bg: 'linear-gradient(#ff9a6b, #ffcf8a 50%, #6b4a8a)', deco: '🌅 💍 🌹 ✨',
+      name: { pt: 'O pedido (mirante ao pôr do sol)', en: 'The proposal (sunset lookout)', zh: '求婚（日落观景台）' },
+      arrive: { pt: 'Que lugar lindo... por que você tá tão nervos{u:a|o|e}? 🌅', en: 'What a beautiful place... why are you so nervous? 🌅', zh: '好美的地方……你怎么这么紧张？🌅' },
+      beats: [
+        { line: { pt: 'Lembra do nosso primeiro encontro? Parece que foi ontem. 🥹', en: 'Remember our first date? It feels like yesterday. 🥹' },
+          romantic: { pt: 'Lembro de cada segundo. Foi ali que eu soube.', en: 'I remember every second. That’s when I knew.' },
+          funny: { pt: 'Lembro que eu estava suando adubo de tanto nervoso. 😂', en: 'I remember sweating compost from nerves. 😂' },
+          sincere: { pt: 'Desde aquele dia você mudou o meu jardim inteiro.', en: 'Since that day you changed my whole garden.' },
+          bold: { pt: 'Lembro. E hoje vai ser ainda mais inesquecível.', en: 'I do. And today will be even more unforgettable.' } },
+        { line: { pt: 'O sol tá se pondo... você queria me dizer alguma coisa? 🌇', en: 'The sun is setting... did you want to tell me something? 🌇' },
+          romantic: { pt: 'Queria. Mas espera só mais um pouquinho...', en: 'I did. But just wait a little longer...' },
+          funny: { pt: 'Que eu esqueci a carteira? Brincadeira! 😅', en: 'That I forgot my wallet? Just kidding! 😅' },
+          sincere: { pt: 'Que eu nunca fui tão feliz quanto sou com você.', en: 'That I’ve never been as happy as I am with you.' },
+          bold: { pt: 'Quero. E vai ser agora.', en: 'I do. And it’s happening now.' } },
+      ],
+      loves: { pers: ['sweet', 'shy', 'sassy', 'nerd', 'brave', 'drama'] }, hates: {},
+    },
+    honeymoon: {
+      icon: '🌺', game: 'fish', need: 3, bg: 'linear-gradient(#64d2ff, #b8f0ff 55%, #ffe7a8)', deco: '🌺 🏝 🥥 🌅',
+      name: { pt: 'Lua de mel na ilha', en: 'Island honeymoon', zh: '海岛蜜月' },
+      arrive: { pt: 'Chegamos, {u:esposa|marido|cônjuge}! Uma ilha só nossa! 🏝', en: 'We’re here, my love! An island all to ourselves! 🏝', zh: '我们到了，亲爱的！属于我们的小岛！🏝' },
+      beats: [
+        { line: { pt: 'Ainda não acredito que a gente se casou. 💒', en: 'I still can’t believe we got married. 💒' },
+          romantic: { pt: 'Eu acredito. Eu escolheria você de novo, todo dia.', en: 'I do. I’d choose you again, every day.' },
+          funny: { pt: 'Nem eu. Os zumbis no casamento foram demais. 😂', en: 'Me neither. The zombies at the wedding were too much. 😂' },
+          sincere: { pt: 'Foi o dia mais feliz da minha vida.', en: 'It was the happiest day of my life.' },
+          bold: { pt: 'Acredita. E isso é só o começo.', en: 'Believe it. And this is just the start.' } },
+        { line: { pt: 'Quantas mudinhas você acha que a gente vai ter? 🌱🌱', en: 'How many little sprouts do you think we’ll have? 🌱🌱' },
+          romantic: { pt: 'Quantas couberem no nosso coração.', en: 'As many as fit in our hearts.' },
+          funny: { pt: 'Um time inteiro: 8 slots, sem repetir! 😂', en: 'A whole team: 8 slots, no repeats! 😂' },
+          sincere: { pt: 'Não importa. O que importa é a gente.', en: 'It doesn’t matter. What matters is us.' },
+          bold: { pt: 'O suficiente para encher um jardim inteiro.', en: 'Enough to fill a whole garden.' } },
+      ],
+      loves: { pers: ['sweet', 'shy', 'sassy', 'nerd', 'brave', 'drama'] }, hates: {},
+    },
+  });
+
+  // Worlds of the trip: name, icon, the game's music and a souvenir.
+  SCENE.worlds = {
+    egypt: { icon: '🐫', music: 'Egypt', souvenir: '🏺', pt: 'o Egito Antigo', en: 'Ancient Egypt', zh: '古埃及' },
+    pirate: { icon: '🏴‍☠️', music: 'Pirate', souvenir: '🦜', pt: 'os Mares Piratas', en: 'Pirate Seas', zh: '海盗港湾' },
+    cowboy: { icon: '🤠', music: 'Cowboy', souvenir: '🌵', pt: 'o Velho Oeste', en: 'the Wild West', zh: '狂野西部' },
+    kongfu: { icon: '🐉', music: 'Kongfu', souvenir: '🏮', pt: 'o Mundo Kung Fu', en: 'Kongfu World', zh: '功夫世界' },
+    future: { icon: '🤖', music: 'Future', souvenir: '🔋', pt: 'o Futuro Distante', en: 'the Far Future', zh: '遥远的未来' },
+    iceage: { icon: '🧊', music: 'Iceage', souvenir: '❄️', pt: 'a Era do Gelo', en: 'the Frostbite Caves', zh: '冰河世界' },
+    dino: { icon: '🦖', music: 'Dino', souvenir: '🦴', pt: 'o Jurássico', en: 'Jurassic Marsh', zh: '侏罗纪沼泽' },
+    sky: { icon: '🏙', music: 'Sky', souvenir: '🎐', pt: 'a Cidade do Céu', en: 'Sky City', zh: '天空之城' },
+  };
+
+  Object.assign(SCENE.games, {
+    fish: { icon: '🐠', pt: 'Peixe raro', en: 'Rare fish', zh: '稀有鱼', how: { pt: 'Toque nos peixes iguais ao da plaquinha antes que sumam. Cuidado com as águas-vivas! 15 segundos.', en: 'Tap the fish that match the sign before they swim away. Watch out for jellyfish! 15 seconds.', zh: '在鱼游走前点击与牌子相同的鱼。小心水母！15 秒。' } },
+    fireworks: { icon: '🎆', pt: 'Fogos de artifício', en: 'Fireworks', zh: '烟花', how: { pt: 'Toque em 🎆 quando o foguete chegar no brilho lá em cima para a explosão perfeita. 6 fogos.', en: 'Tap 🎆 when the rocket reaches the glow up top for a perfect burst. 6 rockets.', zh: '火箭到达顶端光圈时点击 🎆，打出完美烟花。6 枚。' } },
+    museum: { icon: '🖼', pt: 'Que planta é essa?', en: 'Which plant is this?', zh: '这是什么植物？', how: { pt: 'Adivinhe a planta pela silhueta do quadro, antes {g:dela|dele|delu}. 4 quadros.', en: 'Guess the plant from the painting’s silhouette, before she does. 4 paintings.', zh: '根据画中的剪影猜植物，比她先猜出来。4 幅画。' } },
+    souvenir: { icon: '🧳', pt: 'Memória da viagem', en: 'Trip memories', zh: '旅行回忆', how: { pt: 'Vire as cartas e ache os pares de lembranças. 25 segundos.', en: 'Flip the cards and find the pairs of souvenirs. 25 seconds.', zh: '翻牌找出成对的纪念品。25 秒。' } },
+  });
+  SCENE.fish = {
+    sign: { pt: 'Ache: {fish}', en: 'Find: {fish}', zh: '寻找：{fish}' },
+    jelly: { pt: 'Ai, choque! ⚡', en: 'Ouch, a shock! ⚡', zh: '哎呀，触电了！⚡' },
+    seen: { pt: 'Olha ali! 😍', en: 'Look there! 😍', zh: '看那里！😍' },
+  };
+  SCENE.fireworks = {
+    perfect: { pt: 'Perfeito! 🎆', en: 'Perfect! 🎆', zh: '完美！🎆' },
+    early: { pt: 'Cedo demais 💨', en: 'Too early 💨', zh: '太早了 💨' },
+    late: { pt: 'Passou! 💨', en: 'Missed! 💨', zh: '错过了！💨' },
+    wow: { pt: ['Uaaau! 😍', 'Que lindo! ✨', 'Mais um! 🎆'], en: ['Wooow! 😍', 'So pretty! ✨', 'Another one! 🎆'], zh: ['哇！😍', '好美！✨', '再来一个！🎆'] },
+  };
+  SCENE.museum = {
+    ask: { pt: 'Quadro {n}/4: quem é?', en: 'Painting {n}/4: who is it?', zh: '第 {n}/4 幅：这是谁？' },
+    sheFirst: { pt: 'Eu sei! É {plant}! 😜', en: 'I know! It’s {plant}! 😜', zh: '我知道！是{plant}！😜' },
+    right: { pt: 'Isso! Você entende de arte. 🖼', en: 'Yes! You know your art. 🖼', zh: '对！你很懂艺术。🖼' },
+    wrong: { pt: 'Não... era {plant}. 😅', en: 'No... it was {plant}. 😅', zh: '不对……是{plant}。😅' },
+  };
+  SCENE.souvenir = {
+    pairs: { pt: 'Pares: {n}/6', en: 'Pairs: {n}/6', zh: '配对：{n}/6' },
+    found: { pt: ['Esse eu quero levar! 🧳', 'Achou! 😍'], en: ['I want to take that one! 🧳', 'Found it! 😍'], zh: ['这个我想带走！🧳', '找到了！😍'] },
+  };
+
+  // Shop: things bought with tickets (🎟), won with the stars of the dates.
+  // Looks are yours for good; gifts are unlocked for the planner (they still
+  // cost ♥ there); the ring is used up by the proposal.
+  Object.assign(SCENE.looks, {
+    crown: { icon: '👑', shop: 8, pt: 'Coroa de girassol', en: 'Sunflower crown', zh: '向日葵王冠' },
+    mask: { icon: '🎭', shop: 6, pt: 'Máscara de baile', en: 'Masquerade mask', zh: '舞会面具' },
+    scarf: { icon: '🧣', shop: 5, pt: 'Cachecol de tricô', en: 'Knitted scarf', zh: '针织围巾' },
+    necklace: { icon: '📿', shop: 6, pt: 'Colar de sementes', en: 'Seed necklace', zh: '种子项链' },
+  });
+  Object.assign(SCENE.gifts, {
+    cake: { icon: '🎂', cost: 4, shop: 5, loves: ['sweet', 'drama'], pt: 'Bolo de adubo', en: 'Compost cake', zh: '肥料蛋糕' },
+    roses: { icon: '🌹', cost: 4, shop: 5, loves: ['shy', 'sassy'], pt: 'Buquê de rosas', en: 'Bouquet of roses', zh: '玫瑰花束' },
+    console: { icon: '🎮', cost: 4, shop: 6, loves: ['nerd', 'brave'], pt: 'Videogame retrô', en: 'Retro console', zh: '复古游戏机' },
+    ring: { icon: '💍', cost: 0, shop: 15, only: 'proposal', pt: 'Anel de noivado', en: 'Engagement ring', zh: '订婚戒指' },
+  });
+  SCENE.prog = {
+    tickets: { pt: '🎟 {n} ingressos', en: '🎟 {n} tickets', zh: '🎟 {n} 张票' },
+    won: { pt: '+{n} 🎟 ingressos', en: '+{n} 🎟 tickets', zh: '+{n} 🎟 张票' },
+    shop: { pt: '🛍 Loja', en: '🛍 Shop', zh: '🛍 商店' },
+    missions: { pt: '📋 Missões', en: '📋 Missions', zh: '📋 任务' },
+    shopTitle: { pt: 'Loja do Match', en: 'Match shop', zh: '配对商店' },
+    shopDesc: { pt: 'Ganhe ingressos 🎟 com as estrelas dos encontros e as missões da semana. Visuais são seus para sempre; presentes ficam liberados no planejador (ainda custam ♥ lá).', en: 'Earn tickets 🎟 with the stars of your dates and the weekly missions. Looks are yours forever; gifts are unlocked in the planner (they still cost ♥ there).', zh: '通过约会星星和每周任务赚取票 🎟。造型永久拥有；礼物会在策划中解锁（仍需 ♥）。' },
+    looks: { pt: 'Visuais', en: 'Looks', zh: '造型' },
+    gifts: { pt: 'Presentes', en: 'Gifts', zh: '礼物' },
+    buy: { pt: 'Comprar', en: 'Buy', zh: '购买' },
+    owned: { pt: 'Seu ✔', en: 'Yours ✔', zh: '已拥有 ✔' },
+    ringOwned: { pt: 'No bolso 💍', en: 'In your pocket 💍', zh: '在口袋里 💍' },
+    notEnough: { pt: 'Ingressos insuficientes', en: 'Not enough tickets', zh: '票不够' },
+    bought: { pt: 'Comprado: {item}!', en: 'Bought: {item}!', zh: '已购买：{item}！' },
+    loves: { pt: 'Favorito de: {who}', en: 'Loved by: {who}', zh: '喜欢的人：{who}' },
+    onlyProposal: { pt: 'Para o pedido de noivado', en: 'For the proposal', zh: '用于求婚' },
+    missionsTitle: { pt: 'Missões da semana', en: 'Weekly missions', zh: '每周任务' },
+    missionsReset: { pt: 'Novas missões em {d} dia(s).', en: 'New missions in {d} day(s).', zh: '{d} 天后刷新任务。' },
+    claim: { pt: 'Pegar', en: 'Claim', zh: '领取' },
+    claimed: { pt: 'Pego ✔', en: 'Claimed ✔', zh: '已领取 ✔' },
+    needRing: { pt: 'Compre um anel 💍 na loja', en: 'Buy a ring 💍 in the shop', zh: '在商店买一枚戒指 💍' },
+    proposed: { pt: 'Pedido feito 💍', en: 'Already proposed 💍', zh: '已求婚 💍' },
+    stars: { pt: '{icon} {name}: melhor {stars}', en: '{icon} {name}: best {stars}', zh: '{icon} {name}：最佳 {stars}' },
+    album: { pt: 'Lugares visitados: {n}/{total}', en: 'Places visited: {n}/{total}', zh: '去过的地方：{n}/{total}' },
+  };
+  SCENE.missions = {
+    dates: { n: 3, reward: 4, pt: 'Termine 3 encontros com estrelas', en: 'Finish 3 dates with stars', zh: '完成 3 次有星星的约会' },
+    perfect: { n: 1, reward: 4, pt: 'Ganhe ⭐⭐⭐ num encontro', en: 'Get ⭐⭐⭐ on a date', zh: '在一次约会中获得 ⭐⭐⭐' },
+    places: { n: 3, reward: 5, pt: 'Encontros em 3 lugares diferentes', en: 'Dates at 3 different places', zh: '在 3 个不同地点约会' },
+    kiss: { n: 1, reward: 3, pt: 'Um beijo correspondido 💋', en: 'A kiss returned 💋', zh: '一个被回应的吻 💋' },
+    game: { n: 2, reward: 3, pt: 'Faça 15+ pontos em 2 minijogos', en: 'Score 15+ in 2 mini-games', zh: '在 2 个小游戏中得到 15+ 分' },
+    snack: { n: 2, reward: 2, pt: 'Dê o petisco favorito 2 vezes', en: 'Give the favorite snack twice', zh: '喂 2 次最爱的零食' },
+    talk: { n: 2, reward: 3, pt: 'Agrade na conversa livre 2 vezes', en: 'Charm in the free talk twice', zh: '在自由聊天中 2 次讨得欢心' },
+    fresh: { n: 1, reward: 3, pt: 'Vá ao aquário, festival, museu ou numa viagem', en: 'Go to the aquarium, festival, museum or on a trip', zh: '去水族馆、节日、博物馆或旅行' },
+    duo: { n: 1, reward: 6, pt: 'Faça um encontro em dupla online 👥', en: 'Go on an online double date 👥', zh: '进行一次在线双人约会 👥' },
+  };
+  SCENE.propose = {
+    endQ: { pt: '*o sol encosta no horizonte* ...e agora? 🌅', en: '*the sun touches the horizon* ...so? 🌅', zh: '*太阳碰到地平线* ……然后呢？🌅' },
+    kneel: { pt: 'Ajoelhar e abrir a caixinha 💍', en: 'Kneel and open the little box 💍', zh: '单膝跪下打开小盒子 💍' },
+    wait: { pt: 'Ainda não... só um abraço 🤗', en: 'Not yet... just a hug 🤗', zh: '还不是时候……拥抱一下 🤗' },
+    yes: { pt: 'SIM! SIM! MIL VEZES SIM! 💍😭', en: 'YES! YES! A THOUSAND TIMES YES! 💍😭', zh: '我愿意！我愿意！一千个愿意！💍😭' },
+    no: { pt: 'Eu... eu preciso pensar. Ainda é cedo pra mim. 😳', en: 'I... I need to think. It’s too soon for me. 😳', zh: '我……我需要想想。对我来说还太早了。😳' },
+    hlYes: { pt: '💍 Pedido aceito!', en: '💍 Proposal accepted!', zh: '💍 求婚成功！' },
+    hlNo: { pt: '💍 Pedido recusado (o anel volta para o bolso)', en: '💍 Proposal declined (the ring goes back in your pocket)', zh: '💍 求婚被拒（戒指放回口袋）' },
+    msg: { pt: 'Ainda tô olhando pro anel. 💍 Eu te amo!', en: 'I’m still looking at the ring. 💍 I love you!', zh: '我还在看着戒指。💍 我爱你！' },
+  };
+  SCENE.duo = {
+    invite: { pt: 'Encontro em dupla', en: 'Double date', zh: '双人约会' },
+    planTitle: { pt: '👥 Encontro em dupla com {name}', en: '👥 Double date with {name}', zh: '👥 与 {name} 的双人约会' },
+    planDesc: { pt: 'Vocês dois levam uma planta com quem namoram. As escolhas são combinadas na hora, o minijogo é em equipe e dá para conversar durante o encontro.', en: 'You both bring a plant you are dating. Choices are synced live, the mini-game is co-op and you can chat during the date.', zh: '你们各带一株交往中的植物。选择实时同步，小游戏合作进行，约会中还能聊天。' },
+    yourPlant: { pt: 'Sua planta', en: 'Your plant', zh: '你的植物' },
+    where: { pt: 'Onde', en: 'Where', zh: '地点' },
+    send: { pt: 'Convidar 💌', en: 'Invite 💌', zh: '邀请 💌' },
+    noPartner: { pt: 'Você precisa namorar alguma planta para ir num encontro em dupla.', en: 'You need to be dating a plant to go on a double date.', zh: '你需要和一株植物交往才能参加双人约会。' },
+    waiting: { pt: 'Esperando {name} responder… ⏳', en: 'Waiting for {name} to answer… ⏳', zh: '等待 {name} 回复… ⏳' },
+    cancel: { pt: 'Cancelar', en: 'Cancel', zh: '取消' },
+    invited: { pt: '{name} te convidou para um encontro em dupla: {place}, com {plant}!', en: '{name} invited you on a double date: {place}, with {plant}!', zh: '{name} 邀请你参加双人约会：{place}，带着{plant}！' },
+    toast: { pt: '👥 {name} te convidou para um encontro em dupla! Abra o Match de Plantas.', en: '👥 {name} invited you on a double date! Open Plant Match.', zh: '👥 {name} 邀请你双人约会！打开植物配对。' },
+    accept: { pt: 'Aceitar 💕', en: 'Accept 💕', zh: '接受 💕' },
+    decline: { pt: 'Recusar', en: 'Decline', zh: '拒绝' },
+    declined: { pt: '{name} recusou o convite. 😕', en: '{name} declined the invite. 😕', zh: '{name} 拒绝了邀请。😕' },
+    left: { pt: '{name} saiu do encontro. 😢', en: '{name} left the date. 😢', zh: '{name} 离开了约会。😢' },
+    leaveAsk: { pt: 'Sair do encontro em dupla?', en: 'Leave the double date?', zh: '离开双人约会？' },
+    ready: { pt: 'Pronto ✋', en: 'Ready ✋', zh: '准备好了 ✋' },
+    waitOther: { pt: 'Esperando {name}… ⏳', en: 'Waiting for {name}… ⏳', zh: '等待 {name}… ⏳' },
+    arrive: { pt: '{a} e {b} chegaram com {pa} e {pb}! Que casais lindos. 💞', en: '{a} and {b} arrived with {pa} and {pb}! Lovely couples. 💞', zh: '{a} 和 {b} 带着 {pa} 和 {pb} 来了！好般配。💞' },
+    q1: { pt: 'O que os quatro vão fazer primeiro?', en: 'What will the four of you do first?', zh: '你们四个先做什么？' },
+    q2: { pt: 'Hora do brinde! Um brinde a…', en: 'Toast time! A toast to…', zh: '干杯时间！为了……' },
+    a1: [
+      { k: 'wheel', pt: '🎡 Roda-gigante', en: '🎡 Ferris wheel', zh: '🎡 摩天轮' },
+      { k: 'ice', pt: '🍦 Sorvete de sol', en: '🍦 Sun ice cream', zh: '🍦 阳光冰淇淋' },
+      { k: 'booth', pt: '📸 Cabine de fotos', en: '📸 Photo booth', zh: '📸 拍照亭' },
+      { k: 'dance', pt: '💃 Dançar', en: '💃 Dance', zh: '💃 跳舞' },
+    ],
+    a2: [
+      { k: 'love', pt: '💕 ao amor', en: '💕 love', zh: '💕 爱情' },
+      { k: 'friends', pt: '🥂 à amizade', en: '🥂 friendship', zh: '🥂 友谊' },
+      { k: 'garden', pt: '🌱 ao jardim', en: '🌱 the garden', zh: '🌱 花园' },
+      { k: 'zombies', pt: '🧟 aos zumbis derrotados', en: '🧟 defeated zombies', zh: '🧟 被打败的僵尸' },
+    ],
+    same: { pt: 'Sintonia! Os dois escolheram {pick}. 💞', en: 'In sync! You both picked {pick}. 💞', zh: '心有灵犀！你们都选了{pick}。💞' },
+    diff: { pt: 'Vocês escolheram {a} e {b}... dá para fazer os dois! 😄', en: 'You picked {a} and {b}... you can do both! 😄', zh: '你们选了{a}和{b}……两个都做吧！😄' },
+    game: { pt: '☀️ Chuva de sóis em equipe: peguem o máximo juntos! 12 segundos.', en: '☀️ Team sun shower: catch as many as you can together! 12 seconds.', zh: '☀️ 团队阳光雨：一起接尽可能多的阳光！12 秒。' },
+    play: { pt: 'Jogar ☀️', en: 'Play ☀️', zh: '开始 ☀️' },
+    team: { pt: 'Equipe: {a} + {b} = {n} ☀️', en: 'Team: {a} + {b} = {n} ☀️', zh: '团队：{a} + {b} = {n} ☀️' },
+    mine: { pt: 'Você pegou {n} ☀️', en: 'You caught {n} ☀️', zh: '你接到了 {n} ☀️' },
+    resultTitle: { pt: 'Fim do encontro em dupla', en: 'Double date over', zh: '双人约会结束' },
+    resultSync: { pt: 'Sintonia: {n}/2 · Sóis da equipe: {s}', en: 'In sync: {n}/2 · Team suns: {s}', zh: '默契：{n}/2 · 团队阳光：{s}' },
+    close: { pt: 'Voltar', en: 'Back', zh: '返回' },
+    chatPh: { pt: 'Conversar com {name}…', en: 'Chat with {name}…', zh: '和 {name} 聊天…' },
+    plantSays: [
+      { pt: 'Que bom sair com outro casal! 😊', en: 'So nice to go out with another couple! 😊' },
+      { pt: 'Vocês dois combinam muito! 💕', en: 'You two are so cute together! 💕' },
+      { pt: 'Bora repetir isso logo, hein? 😄', en: 'Let’s do this again soon, okay? 😄' },
+    ],
+    errors: { busy: { pt: 'Esse jogador está num encontro agora.', en: 'That player is on a date right now.' }, not_partner: { pt: 'Escolha uma planta com quem você namora.', en: 'Pick a plant you are dating.' }, hidden: { pt: 'Esse jogador não está visível.', en: 'That player is not visible.' }, no_profile: { pt: 'Crie seu perfil de jogador primeiro.', en: 'Create your player profile first.' } },
+  };
+  SCENE.ach = {
+    match_shop: { icon: '🛍', pt: ['Comprinhas', 'Compre algo na loja do Match.'], en: ['Shopping spree', 'Buy something in the Match shop.'], zh: ['购物', '在配对商店买东西。'] },
+    match_proposal: { icon: '💍', pt: ['Ela disse sim!', 'Faça o pedido de noivado e ouça um sim.'], en: ['They said yes!', 'Propose and hear a yes.'], zh: ['答应了！', '求婚并得到同意。'] },
+    match_honeymoon: { icon: '🌺', pt: ['Lua de mel', 'Leve quem você casou para a lua de mel.'], en: ['Honeymoon', 'Take your spouse on the honeymoon.'], zh: ['蜜月', '带你的伴侣去度蜜月。'] },
+    match_places: { icon: '🗺', pt: ['Turista do amor', 'Tenha encontros com estrelas em 8 lugares.'], en: ['Love tourist', 'Get starred dates at 8 places.'], zh: ['爱情游客', '在 8 个地点完成有星星的约会。'] },
+    match_missions: { icon: '📋', pt: ['Missão cumprida', 'Pegue 5 recompensas de missões semanais.'], en: ['Mission accomplished', 'Claim 5 weekly mission rewards.'], zh: ['任务完成', '领取 5 次每周任务奖励。'] },
+    match_duo: { icon: '👥', pt: ['Encontro em dupla', 'Faça um encontro em dupla online com outro jogador.'], en: ['Double date', 'Go on an online double date with another player.'], zh: ['双人约会', '与另一位玩家进行在线双人约会。'] },
+  };
+
   // Personalities: the openers and reactions of each plant, her favorite
   // sticker and how easily she ghosts after a bad reply.
   var PERS = {
