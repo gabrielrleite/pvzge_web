@@ -112,6 +112,7 @@
     if (!I.plan || I.plan.code !== p.code) I.plan = { code: p.code, tab: 'scene', place: 'garden', look: 'casual', gift: '' };
     var plan = I.plan;
     var U = SC.ui;
+    if (plan.inviting || plan.result) return inviteCard(p, plan);
     var sheet = el('div.pvzx-mview.pvzx-dates', null, [
       el('button.pvzx-x', { text: '←', title: t('close'), onclick: function () {
         I.view.datePick = null;
@@ -200,12 +201,91 @@
     sheet.appendChild(
       el('div.pvzx-file-actions', null, [
         el('button.mp-btn.mp-green', { text: L(U.go), disabled: tired || !!maxLock || !!placeLock(plan.place, r), onclick: function () {
-          I.startScene(p, plan.place, plan.look, plan.gift);
+          I.inviteDate(p, plan);
         } }),
       ]),
     );
     return sheet;
   };
+
+  /* ------------------------------------------------------- the invite */
+
+  // She may say no: it depends on how the chat went, the place, whether she
+  // liked you first, her personality and the relationship.
+  function acceptChance(p, place) {
+    var r = I.partners()[p.code];
+    var c = I.chats[p.code];
+    var sess = c && c.s;
+    if (sess && sess.ghost) return { p: 0, why: 'ghost' };
+    var feel = placeFeel(p, place);
+    if (r) return { p: [0.85, 0.93, 0.97, 0.99][I.relStage(r)] - (feel === 'hate' ? 0.15 : 0), why: feel === 'hate' ? 'place' : 'busy' };
+    var aff = sess ? sess.affinity : 0;
+    var pr = 0.5 + aff * 0.13 + (p.likedYou ? 0.1 : 0) + (feel === 'love' ? 0.1 : feel === 'hate' ? -0.2 : 0) - (persOf(p) === 'shy' ? 0.1 : 0);
+    return { p: Math.max(0.05, Math.min(0.97, pr)), why: feel === 'hate' ? 'place' : aff === 0 && !(sess && sess.done) ? 'tooSoon' : 'busy' };
+  }
+
+  I.inviteDate = function inviteDate(p, plan) {
+    plan.inviting = true;
+    plan.result = null;
+    I.render();
+    var ch = acceptChance(p, plan.place);
+    setTimeout(function () {
+      if (I.plan !== plan) return;
+      plan.inviting = false;
+      var R = SC.reject;
+      if (Math.random() < ch.p) {
+        plan.result = { ok: true, text: I.gfix(Lp(R.accepted), p.gender) };
+        I.render();
+        setTimeout(function () {
+          if (I.plan !== plan) return;
+          plan.result = null;
+          I.startScene(p, plan.place, plan.look, plan.gift);
+        }, 1100);
+      } else {
+        countDate(p.code);
+        var text =
+          ch.why === 'ghost'
+            ? ''
+            : I.gfix(Lp(ch.why === 'place' ? R.place : ch.why === 'tooSoon' ? R.tooSoon : R.busy, { place: L(SC.places[plan.place].name) }), p.gender);
+        if (text) I.pushMsg(p.code, 'them', text);
+        else I.pushMsg(p.code, 'sys', L(R.seenNoReply, { name: p.name }));
+        plan.result = { ok: false, text: text || L(R.seenNoReply, { name: p.name }) };
+        I.render();
+      }
+    }, 1600 + Math.random() * 900);
+  };
+
+  function inviteCard(p, plan) {
+    var R = SC.reject;
+    var res = plan.result;
+    var kids = [
+      el('div.pvzx-invite-pic' + (res && !res.ok ? '.pvzx-a-away' : res ? '.pvzx-a-happy' : ''), null, [p.photos && p.photos.idle ? I.animImg(p.photos.idle) : el('img', { src: p.packet, alt: '' })]),
+      el('b', { text: p.name }),
+      el('div.pvzx-bubble.pvzx-from-me', { text: '💐 ' + L(SC.places[plan.place].name) + ' ?' }),
+    ];
+    if (!res) kids.push(el('div.pvzx-bubble.pvzx-from-them.pvzx-typing', { text: L(R.sending) + ' ' + L(TXT.typing) }));
+    else kids.push(el('div.pvzx-bubble.pvzx-from-them', { text: res.text }));
+    if (res && !res.ok) {
+      kids.push(el('p.pvzx-seek', { text: L(R.refused, { name: p.name }) }));
+      var left = datesToday(p.code) < DATES_PER_DAY;
+      kids.push(
+        el('div.pvzx-file-actions', null, [
+          left
+            ? btn('mp-btn.mp-small.mp-blue', L(R.tryOther), function () {
+                plan.result = null;
+                I.render();
+              })
+            : null,
+          btn('mp-btn.mp-small.mp-brown', L(SC.ui.back), function () {
+            plan.result = null;
+            I.view.datePick = null;
+            I.render();
+          }),
+        ]),
+      );
+    }
+    return el('div.pvzx-mview.pvzx-dates.pvzx-invite', null, kids);
+  }
 
   /* ----------------------------------------------------------- the scene */
 
@@ -215,8 +295,18 @@
   I.scene = null;
   I.sceneEl = null;
 
-  var SECOND_GAMES = ['quiz', 'rhythm', 'photo', 'suns'];
-  var EVENTS = ['zombie', 'rain', 'spill', 'ex'];
+  var SECOND_GAMES = ['quiz', 'rhythm', 'photo'];
+  // Surprises that fit each place (no zombie raid in the movies).
+  var EVENTS_AT = {
+    garden: ['zombie', 'rain', 'ex'],
+    cinema: ['spill', 'ex'],
+    beach: ['zombie', 'rain', 'ex'],
+    dinner: ['spill', 'ex'],
+    park: ['zombie', 'rain', 'spill', 'ex'],
+    cafe: ['rain', 'spill', 'ex'],
+  };
+  // Gifts each personality dislikes (she gives them back).
+  var PGIFT_HATE = { sweet: 'book', shy: 'choc', sassy: 'water', nerd: 'plush', brave: 'flowers', drama: 'water' };
   var PTOUCH = {
     sweet: { love: 'pet', hate: 'tickle' },
     shy: { love: 'hold', hate: 'tickle' },
@@ -246,7 +336,7 @@
         return g !== pl.game;
       }),
     )[0];
-    var event = Math.random() < 0.75 ? pick(EVENTS) : null;
+    var event = Math.random() < 0.75 ? pick(EVENTS_AT[place] || ['ex']) : null;
     var steps = ['arrive', 'beat1', 'branch', 'game0', 'event', 'beat2', 'game1', 'talk', 'end', 'result'].filter(function (st) {
       return st !== 'event' || event;
     });
@@ -285,7 +375,12 @@
     if (gift) {
       var g = SC.gifts[gift];
       say(s, g.icon + ' ' + L(g), 'me');
-      if (favGift(p) === gift) {
+      if (PGIFT_HATE[pers] === gift && favGift(p) !== gift) {
+        mood(-8);
+        say(s, L(SC.reject.giftHate, { gift: low(L(g)) }));
+        s.hl.push(L(SC.reject.giftHateHl, { icon: g.icon }));
+        s.giftBack = g.icon;
+      } else if (favGift(p) === gift) {
         mood(12 + (lovesGifts ? 5 : 0));
         say(s, L(SC.react.giftLove, { gift: low(L(g)) }));
         s.hl.push(L(SC.hl.giftLove, { icon: g.icon }));
@@ -299,27 +394,91 @@
       s.hl.push(L(SC.hl.giftNone));
     }
     say(s, L(SC.ui.touchHint), 'sys');
+    s.started = true;
     if (!I.sceneEl) I.sceneEl = el('div.pvzx-scene');
     if (I.node && I.sceneEl.parentNode !== I.node) I.node.appendChild(I.sceneEl);
     I.render();
     I.sceneRender();
   };
 
+  // Mood changes show as a pop-up and a reaction of the plant (played after
+  // the next render). Below 6 she walks out.
   function mood(n) {
     var s = I.scene;
     if (!s) return;
     s.mood = Math.max(0, Math.min(100, s.mood + n));
-    if (n && I.sceneEl) {
-      var fx = el('div.pvzx-scene-fx', { text: n > 0 ? '❤️ +' + n : '💔 ' + n });
-      I.sceneEl.appendChild(fx);
-      setTimeout(function () {
-        fx.remove();
-      }, 1200);
-    }
+    if (!n) return;
+    s.fx = s.fx || [];
+    s.fx.push({ text: n > 0 ? '❤️ +' + n : '💔 ' + n, kind: n >= 6 ? 'happy' : n <= -5 ? 'angry' : n > 0 ? 'blush' : 'away' });
+    if (s.mood <= 5 && !s.walking && s.step !== 'result' && s.started) walkout(s);
   }
+
+  // She has had enough: says so, walks out of the scene and the date ends.
+  function walkout(s) {
+    s.walking = true;
+    s.hl.push(L(SC.reject.walkoutHl));
+    // After the reaction to what made her leave.
+    setTimeout(function () {
+      if (I.scene !== s) return;
+      say(s, Lp(SC.reject.walkout));
+      s.fx = (s.fx || []).concat([{ kind: 'walkout' }]);
+      I.sceneRender();
+    }, 60);
+    setTimeout(function () {
+      if (I.scene !== s) return;
+      s.playing = false;
+      finish(s, 'walkout');
+      I.sceneRender();
+    }, 1800);
+  }
+
+  // Reactions: classes on the plant and particles over it.
+  var FX_PARTICLES = { happy: ['❤️', '💕', '✨'], blush: ['💗'], angry: ['💢', '💔'], away: ['💦'], walkout: ['💨', '👋'], slap: ['👋', '💥'], swoon: ['💖', '💞', '✨'] };
+  I.playFx = function playFx(s) {
+    var box = I.sceneEl;
+    if (!box || !s.fx || !s.fx.length) return;
+    var plant = box.querySelector('.pvzx-scene-plant');
+    s.fx.forEach(function (f, i) {
+      setTimeout(function () {
+        if (f.text) {
+          var pop = el('div.pvzx-scene-fx', { text: f.text });
+          box.appendChild(pop);
+          setTimeout(function () {
+            pop.remove();
+          }, 1200);
+        }
+        if (!plant || !f.kind) return;
+        plant.classList.remove('pvzx-a-happy', 'pvzx-a-angry', 'pvzx-a-blush', 'pvzx-a-away', 'pvzx-a-swoon');
+        void plant.offsetWidth;
+        plant.classList.add('pvzx-a-' + f.kind);
+        if (f.kind === 'slap') box.classList.add('pvzx-a-shake');
+        setTimeout(function () {
+          box.classList.remove('pvzx-a-shake');
+        }, 500);
+        var r = plant.getBoundingClientRect();
+        var b = box.getBoundingClientRect();
+        (FX_PARTICLES[f.kind] || []).forEach(function (emo, k) {
+          for (var j = 0; j < 2; j++) {
+            var pt = el('span.pvzx-particle', { text: emo });
+            pt.style.left = r.left - b.left + r.width / 2 + 'px';
+            pt.style.top = r.top - b.top + r.height * 0.3 + 'px';
+            pt.style.setProperty('--dx', Math.round((Math.random() - 0.5) * 160) + 'px');
+            pt.style.setProperty('--dy', -Math.round(60 + Math.random() * 90) + 'px');
+            pt.style.animationDelay = (k * 2 + j) * 70 + 'ms';
+            box.appendChild(pt);
+            setTimeout(function () {
+              pt.remove();
+            }, 1500);
+          }
+        });
+      }, i * 180);
+    });
+    s.fx = [];
+  };
 
   // Moves to the next step and says what that step starts with.
   function next(s) {
+    if (s.walking) return;
     s.pos++;
     s.step = s.steps[s.pos];
     s.sub = null;
@@ -452,7 +611,7 @@
 
   I.touchPlant = function touchPlant(kind, snack) {
     var s = I.scene;
-    if (!s || s.step === 'result') return;
+    if (!s || s.step === 'result' || s.walking) return;
     var p = s.p;
     var T = SC.touch;
     var pers = persOf(p);
@@ -690,11 +849,27 @@
     var high = s.mood >= 70;
     var reply;
     if (kind === 'kiss') {
-      mood(high ? 6 : -8);
-      reply = high ? R.endKissYes : R.endKissNo;
+      if (high) {
+        mood(6);
+        reply = R.endKissYes;
+        s.fx = (s.fx || []).concat([{ kind: 'swoon' }]);
+      } else if (s.mood < 40) {
+        // Way too soon: a slap.
+        mood(-10);
+        reply = SC.reject.slap;
+        s.fx = (s.fx || []).concat([{ kind: 'slap' }]);
+      } else {
+        mood(-8);
+        reply = R.endKissNo;
+      }
     } else if (kind === 'hug') {
-      mood(s.mood >= 45 ? 4 : -2);
-      reply = R.endHugYes;
+      if (s.mood < 30) {
+        mood(-3);
+        reply = SC.reject.dodge;
+      } else {
+        mood(s.mood >= 45 ? 4 : -2);
+        reply = R.endHugYes;
+      }
     } else {
       mood(high ? -4 : 2);
       reply = high ? R.endShakeHigh : R.endShakeLow;
@@ -710,6 +885,7 @@
   }
 
   function finish(s, quit) {
+    if (s.step === 'result' && s.stars != null) return;
     var p = s.p;
     var stars = quit ? 0 : starsOf(s.mood);
     s.stars = stars;
@@ -736,7 +912,20 @@
     } else {
       I.later(p.code, Lp(CHAT.dateLostMsg), 4000 + Math.random() * 6000);
       var rr = I.partners()[p.code];
-      if (quit && rr && I.relStage(rr) >= 1) I.addXp(p.code, -1);
+      if (quit === 'walkout' && rr) I.addXp(p.code, -2);
+      else if (quit && rr && I.relStage(rr) >= 1) I.addXp(p.code, -1);
+      // A bad first date can end the match.
+      if (!rr && (quit === 'walkout' || Math.random() < 0.5)) {
+        s.unmatched = true;
+        if (I.round) {
+          var at = I.round.matches.indexOf(p);
+          if (at < 0) at = I.round.matches.findIndex(function (m) {
+            return m.code === p.code;
+          });
+          if (at >= 0) I.round.matches.splice(at, 1);
+        }
+        I.later(p.code, L(SC.reject.unmatched, { name: p.name }), 6000, '', 'sys');
+      }
     }
     I.flushStats();
   }
@@ -793,7 +982,7 @@
       }),
     ]);
     var stage;
-    var actions = el('div.pvzx-scene-actions');
+    var actions = el('div.pvzx-scene-actions' + (s.walking ? '.pvzx-off' : ''));
     var next1 = function () {
       actions.appendChild(btn('mp-btn.mp-green', L(U.next), function () {
         next(s);
@@ -847,14 +1036,14 @@
           s.gameEl = el('div.pvzx-scene-stage.pvzx-game');
           I.sceneRender();
           GAMES[gid](s.gameEl, p, function (points) {
-            if (I.scene !== s) return;
+            if (I.scene !== s || s.walking) return;
             s.playing = false;
             s.gamePts[gameIdx] = points;
             mood(Math.round(points));
             s.hl.push(L(SC.hl.game, { icon: g.icon, game: L(g), n: points }));
             say(s, L(points >= 12 ? SC.react.gameGood : SC.react.gameMeh));
             I.sceneRender();
-          });
+          }, ctxOf(s));
         }));
       }
     } else if (s.step === 'event') {
@@ -944,10 +1133,40 @@
     });
     if (s.typing) talk.appendChild(el('div.pvzx-bubble.pvzx-from-them.pvzx-typing', { text: L(TXT.typing) }));
     box.replaceChildren(meter, stage, talk, actions);
+    box.classList.toggle('pvzx-playing', !!s.playing);
     setTimeout(function () {
       talk.scrollTop = talk.scrollHeight;
     }, 0);
+    // She walks in at the start; reactions queued by the last action play now.
+    if (!s.entered && !s.playing) {
+      s.entered = true;
+      var pn = box.querySelector('.pvzx-scene-plant');
+      if (pn) pn.classList.add('pvzx-a-enter');
+      if (s.giftBack) {
+        var gb = el('span.pvzx-giftback', { text: s.giftBack });
+        box.appendChild(gb);
+        setTimeout(function () {
+          gb.remove();
+        }, 1600);
+      }
+    }
+    if (!s.playing) I.playFx(s);
   };
+
+  // What a mini-game can use from the scene: the mood (some moments depend on
+  // it), a line in the talk and an immediate reaction.
+  function ctxOf(s) {
+    return {
+      s: s,
+      mood: function () {
+        return s.mood;
+      },
+      pers: persOf(s.p),
+      say: function (text, from) {
+        say(s, text, from);
+      },
+    };
+  }
 
   function resultView(s) {
     var U = SC.ui;
@@ -962,10 +1181,11 @@
         'ul',
         null,
         s.hl.map(function (h) {
-          return el('li', { text: h });
+          return el('li', { text: I.gfix(h, s.p.gender) });
         }),
       ),
       s.fresh ? el('p.pvzx-good', { text: L(TXT.dateWon, { name: s.p.name }) }) : null,
+      s.unmatched ? el('p.pvzx-seek', { text: L(SC.reject.unmatched, { name: s.p.name }) }) : null,
       btn('mp-btn.mp-green', L(U.back), I.closeScene),
     ]);
   }
@@ -1145,7 +1365,9 @@
         var dt = Math.min(0.05, (now - prev) / 1000);
         prev = now;
         if (cur) {
-          cur.x += dir * speed * dt;
+          // A wave (x-match-games.js) shakes the floor and speeds it up.
+          var wave = area.classList.contains('pvzx-waving');
+          cur.x += dir * speed * (wave ? 1.5 : 1) * dt + (wave ? (Math.random() - 0.5) * 10 : 0);
           if (cur.x < 0) {
             cur.x = 0;
             dir = 1;
