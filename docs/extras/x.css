@@ -2487,3 +2487,174 @@ body.pvzx-open .mp-menu-account {
 .pvzx-album {
   color: #ffd27a !important;
 }
+
+/* plant match 2.5: interactive dates */
+.pvzx-touchable {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.pvzx-touchable img {
+  pointer-events: none;
+}
+.pvzx-snacks {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pvzx-snack {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 20px;
+  cursor: grab;
+  touch-action: none;
+}
+.pvzx-snack-ghost {
+  position: fixed;
+  z-index: 9999;
+  font-size: 38px;
+  pointer-events: none;
+}
+.pvzx-timer {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+.pvzx-timer i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ff3d8b, #ffb44a);
+  animation: pvzx-shrink linear forwards;
+}
+@keyframes pvzx-shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
+.pvzx-talk {
+  border-top: none;
+  padding: 0;
+}
+.pvzx-raid-plant {
+  position: absolute;
+  left: 4%;
+  bottom: 10px;
+  height: 50%;
+}
+.pvzx-zombie {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border: none;
+  background: none;
+  font-size: 46px;
+  cursor: pointer;
+  touch-action: none;
+}
+.pvzx-zombie.pvzx-hit,
+.pvzx-hole.pvzx-hit {
+  filter: brightness(2.2);
+  transform: scale(0.9);
+}
+.pvzx-bucket {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  margin-left: -32px;
+  font-size: 58px;
+}
+.pvzx-kernel {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  font-size: 28px;
+  cursor: pointer;
+  touch-action: none;
+}
+.pvzx-sand {
+  position: absolute;
+  height: 24px;
+  box-sizing: border-box;
+  border: 2px solid #c79a4a;
+  border-radius: 4px;
+  background: #f2cf7a;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+}
+.pvzx-sand-base {
+  background: #d9b05c;
+}
+.pvzx-game .pvzx-tap {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 60px;
+  height: 60px;
+  margin: 0;
+  font-size: 26px;
+}
+.pvzx-latte {
+  max-width: 80%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px #fff, 0 6px 16px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+  cursor: crosshair;
+}
+.pvzx-latte-done {
+  margin-top: 12px;
+}
+.pvzx-holes {
+  display: grid;
+  grid-template-columns: repeat(3, 70px);
+  gap: 10px;
+}
+.pvzx-hole {
+  width: 70px;
+  height: 56px;
+  border: none;
+  border-radius: 50% / 40%;
+  background: radial-gradient(ellipse at 50% 70%, #3b2a1a 55%, #6b4a2a 56%);
+  font-size: 34px;
+  cursor: pointer;
+  touch-action: none;
+}
+.pvzx-hole.pvzx-miss {
+  background: radial-gradient(ellipse at 50% 70%, #6b1a1a 55%, #6b4a2a 56%);
+}
+.pvzx-plate {
+  font-size: 26px;
+  text-align: center;
+  min-height: 34px;
+}
+.pvzx-food {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.pvzx-food-btn {
+  height: 46px;
+  border: 2px solid #f0c9a0;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+.pvzx-secrets {
+  margin: 4px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  font-family: var(--mp-font-hand);
+}

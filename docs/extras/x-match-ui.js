@@ -790,7 +790,21 @@
     var r = I.partners()[p.code];
     if (!r) return null;
     var st = I.relStage(r);
-    return el('div.pvzx-msec', null, [el('h4', { text: L(TXT.tabPartners) }), I.relationInfo(r, st)]);
+    var secrets = I.secretsOf ? I.secretsOf(r, p.gender) : [];
+    return el('div.pvzx-msec', null, [
+      el('h4', { text: L(TXT.tabPartners) }),
+      I.relationInfo(r, st),
+      secrets.length ? el('h4', { text: '🤫 ' + L(MT.SCENE.ui.secrets) }) : null,
+      secrets.length
+        ? el(
+            'ul.pvzx-secrets',
+            null,
+            secrets.map(function (x) {
+              return el('li', { text: x });
+            }),
+          )
+        : null,
+    ]);
   };
 
   I.relationInfo = function relationInfo(r, st) {
@@ -987,6 +1001,11 @@
 
   I.onKey = function onKey(e) {
     if (!I.node) return;
+    // Typing in a field (chats, profile, the date's free talk) or a date
+    // scene in progress: the phone's shortcuts stay off.
+    var tg = e.target;
+    if (tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable)) return;
+    if (I.scene) return;
     var k = e.key;
     var p = I.current();
     var disc = I.view.tab === 'discover' && !I.view.prefs && !I.view.viewing && !I.view.datePick;
