@@ -31,7 +31,7 @@ const { ExpressPeerServer } = require('peer');
 const { openStore } = require('./store');
 const auth = require('./auth');
 
-const VERSION = '4.5.0';
+const VERSION = '4.6.0';
 const PORT = Number(process.env.PORT) || 9000;
 const MAX_SAVE = (Number(process.env.MAX_SAVE_MB) || 8) * 1024 * 1024;
 const ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
@@ -182,7 +182,7 @@ function optionalUser(req, res, next) {
 /* ------------------------------------------------------------------- API */
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, version: VERSION, storage: store.kind, features: ['accounts', 'saves', 'rooms', 'matches', 'admin', 'history', 'scores', 'achievements', 'daily', 'branding', 'matchstats', 'matchstate', 'players', 'photos'] });
+  res.json({ ok: true, version: VERSION, storage: store.kind, features: ['accounts', 'saves', 'rooms', 'matches', 'admin', 'history', 'scores', 'achievements', 'daily', 'branding', 'matchstats', 'matchstate', 'players', 'photos', 'duo'] });
 });
 
 // Accounts ---------------------------------------------------------------
@@ -980,6 +980,157 @@ app.post('/api/match/dm/read', limit('dm', 120), requireUser, json, wrap(async (
   if (!other) return res.status(404).json({ error: 'no_player' });
   res.json({ read: await store.markDmsRead(req.user.id, other.id) });
 }));
+
+// Double dates ------------------------------------------------------------
+//
+// Two players with Match profiles go on a date together, each with one of
+// their partner plants. Kept in memory (a date lasts minutes): the invite,
+// the step both are on (it moves when both have acted), each one's choice
+// or mini-game score per step and a live chat. The script of each step is
+// the game's; the server only keeps both in sync. Polled by the game.
+const DUO_TTL = 15 * 60 * 1000;
+const DUO_INVITE_TTL = 3 * 60 * 1000;
+const DUO_STEPS = 5;
+const DUO_PLACES = ['park', 'festival', 'beach', 'cafe', 'aquarium', 'museum'];
+const duos = new Map();
+let duoSeq = 0;
+
+function duoOf(userId) {
+  const now = Date.now();
+  let found = null;
+  for (const [id, d] of duos) {
+    const ttl = d.state === 'invited' ? DUO_INVITE_TTL : DUO_TTL;
+    if (now - d.updated > ttl) {
+      duos.delete(id);
+      continue;
+    }
+    if ((d.a.user === userId || d.invitee === userId) && (!found || d.updated > found.updated)) found = d;
+  }
+  return found;
+}
+setInterval(() => duoOf(-1), 60000).unref();
+
+async function partnerPlant(userId, code) {
+  if (!PLANT_CODE.test(code || '')) return null;
+  const cur = readMatchState(await store.getMatchState(userId));
+  const ps = (cur && cur.state.matchPartners) || {};
+  const r = ps[code];
+  return r ? { code, rel: relStage(r) } : null;
+}
+
+function duoOut(d, me) {
+  const side = d.a.user === me ? 'a' : 'b';
+  const pub = (x) => x && { name: nameOf(x.user), plant: x.plant };
+  return {
+    id: d.id,
+    me: side,
+    state: d.state,
+    place: d.place,
+    step: d.step,
+    seed: d.seed,
+    a: pub(d.a),
+    b: pub(d.b) || { name: nameOf(d.invitee), plant: null },
+    acts: d.acts,
+    chat: d.chat.slice(-40),
+    left: d.left || '',
+    updated: d.updated,
+  };
+}
+
+app.get('/api/match/duo', limit('dm', 120), requireUser, (req, res) => {
+  const d = duoOf(req.user.id);
+  res.json({ duo: d ? duoOut(d, req.user.id) : null });
+});
+
+app.post('/api/match/duo', limit('dmsend', 20), requireUser, json, wrap(async (req, res) => {
+  const b = req.body || {};
+  const target = store.findUser(String(b.to || ''));
+  if (!target || target.id === req.user.id) return res.status(404).json({ error: 'no_player' });
+  const mine = store.getMatchProfile(req.user.id);
+  const theirs = store.getMatchProfile(target.id);
+  if (!mine) return res.status(400).json({ error: 'no_profile' });
+  if (!theirs || !theirs.visible) return res.status(403).json({ error: 'hidden' });
+  if (blockedBetween(req.user.id, target.id)) return res.status(403).json({ error: 'blocked' });
+  const plant = await partnerPlant(req.user.id, b.plant);
+  if (!plant) return res.status(400).json({ error: 'not_partner' });
+  const busy = duoOf(target.id);
+  if (busy && busy.state === 'on') return res.status(409).json({ error: 'busy' });
+  const old = duoOf(req.user.id);
+  if (old) duos.delete(old.id);
+  touch(req.user.id);
+  const now = Date.now();
+  const d = {
+    id: (++duoSeq).toString(36) + now.toString(36),
+    a: { user: req.user.id, plant },
+    b: null,
+    invitee: target.id,
+    place: DUO_PLACES.includes(b.place) ? b.place : 'park',
+    state: 'invited',
+    step: 0,
+    seed: Math.floor(Math.random() * 1e9),
+    acts: {},
+    chat: [],
+    created: now,
+    updated: now,
+  };
+  duos.set(d.id, d);
+  res.json({ duo: duoOut(d, req.user.id) });
+}));
+
+app.post('/api/match/duo/:id/answer', limit('dmsend', 20), requireUser, json, wrap(async (req, res) => {
+  const d = duos.get(String(req.params.id));
+  if (!d || d.invitee !== req.user.id || d.state !== 'invited') return res.status(404).json({ error: 'no_duo' });
+  const b = req.body || {};
+  if (!b.accept) {
+    d.state = 'declined';
+    d.updated = Date.now();
+    return res.json({ duo: duoOut(d, req.user.id) });
+  }
+  const plant = await partnerPlant(req.user.id, b.plant);
+  if (!plant) return res.status(400).json({ error: 'not_partner' });
+  d.b = { user: req.user.id, plant };
+  d.state = 'on';
+  d.updated = Date.now();
+  touch(req.user.id);
+  res.json({ duo: duoOut(d, req.user.id) });
+}));
+
+// kind: 'act' (the choice or score of the current step: a short string or a
+// number), 'say' (chat) or 'leave'.
+app.post('/api/match/duo/:id/act', limit('dm', 240), requireUser, json, (req, res) => {
+  const d = duos.get(String(req.params.id));
+  const me = req.user.id;
+  if (!d || (d.a.user !== me && !(d.b && d.b.user === me) && d.invitee !== me)) return res.status(404).json({ error: 'no_duo' });
+  const side = d.a.user === me ? 'a' : 'b';
+  const b = req.body || {};
+  const now = Date.now();
+  if (b.kind === 'leave') {
+    if (d.state === 'invited' && side === 'a') d.state = 'cancelled';
+    else if (d.state === 'on' && d.step < DUO_STEPS - 1) d.left = side;
+    d.state = d.state === 'on' ? 'done' : d.state;
+    d.updated = now;
+    return res.json({ duo: duoOut(d, me) });
+  }
+  if (d.state !== 'on') return res.status(409).json({ error: 'not_on' });
+  if (b.kind === 'say') {
+    const text = clean(b.text, 160);
+    if (!text) return res.status(400).json({ error: 'empty' });
+    d.chat.push({ from: side, text, at: now });
+    if (d.chat.length > 60) d.chat.splice(0, d.chat.length - 60);
+  } else if (b.kind === 'act') {
+    const step = Math.floor(Number(b.step));
+    if (step !== d.step || step >= DUO_STEPS) return res.status(409).json({ error: 'step', duo: duoOut(d, me) });
+    let v = b.value;
+    if (typeof v === 'number') v = Math.max(-10, Math.min(30, Math.round(v)));
+    else v = clean(String(v || ''), 24);
+    const key = String(step);
+    d.acts[key] = d.acts[key] || {};
+    d.acts[key][side] = v;
+    if (d.acts[key].a !== undefined && d.acts[key].b !== undefined && d.step < DUO_STEPS - 1) d.step++;
+  } else return res.status(400).json({ error: 'kind' });
+  d.updated = now;
+  res.json({ duo: duoOut(d, me) });
+});
 
 app.post('/api/match/block', limit('save', 30), requireUser, json, (req, res) => {
   const other = store.findUser(String((req.body && req.body.name) || ''));

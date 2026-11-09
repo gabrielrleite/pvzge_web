@@ -537,6 +537,11 @@
           pm.chat = name;
           I.render();
         } }),
+        I.duoInvite
+          ? el('button.mp-btn.mp-small.mp-green', { text: '👥 ' + L(X.matchText.SCENE.duo.invite), onclick: function () {
+              I.duoInvite(name);
+            } })
+          : null,
         el('button.mp-btn.mp-small.mp-brown', { text: '🚫 ' + L(TXT.pmBlock), onclick: function () {
           I.pmBlock(name);
         } }),

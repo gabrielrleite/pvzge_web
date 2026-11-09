@@ -154,6 +154,22 @@
     },
   };
 
+  // Plant Match 2.7 achievements (texts in x-match-text.js).
+  var MATCH_ACH = X.matchText && X.matchText.SCENE.ach;
+  if (MATCH_ACH) {
+    var at = ach.LIST.findIndex(function (a) {
+      return a.id === 'match_event';
+    });
+    Object.keys(MATCH_ACH).forEach(function (id, k) {
+      ach.LIST.splice(at + 1 + k, 0, { id: id, icon: MATCH_ACH[id].icon, check: function () {
+        return false;
+      } });
+      ['pt', 'en', 'zh'].forEach(function (lang) {
+        if (NAMES[lang] && MATCH_ACH[id][lang]) NAMES[lang][id] = MATCH_ACH[id][lang];
+      });
+    });
+  }
+
   ach.name = function (id) {
     var n = (NAMES[MP.lang] && NAMES[MP.lang][id]) || NAMES.en[id];
     return n ? n[0] : id;

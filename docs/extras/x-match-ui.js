@@ -1061,12 +1061,19 @@
       I.queuePhotos();
       I.dailyCheck();
       I.pullState();
+      if (I.duoPoll) setTimeout(I.duoPoll, 300);
     };
     if (MP.cards && !MP.cards.ready) MP.cards.load().then(go);
     else go();
   };
 
   M.close = function () {
+    if (I.duo && I.duo.el) {
+      I.duo.el.remove();
+      I.duo.el = null;
+      I.duo.art = null;
+      I.duo.game = null;
+    }
     if (I.node) {
       I.node.querySelectorAll('.pvzx-mcard').forEach(function (c) {
         if (c._cleanup) c._cleanup();
@@ -1079,6 +1086,7 @@
     if (I.cam && I.cam.root.isValid) I.cam.root.destroy();
     I.cam = null;
     I.view.datePick = null;
+    if (I.scene && I.sceneMusic) I.sceneMusic(null);
     I.scene = null;
     I.sceneEl = null;
     I.flushStats();

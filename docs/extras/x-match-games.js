@@ -99,13 +99,14 @@
     // with a short window to act.
     function film() {
       var subs = L(MV.subs);
-      var screen = el('div.pvzx-screen', null, [el('div.pvzx-screen-sky'), el('span.pvzx-screen-zombie', { text: '🧟' }), el('span.pvzx-screen-flower', { text: '🌻' }), el('div.pvzx-screen-sub', { text: subs[0] })]);
+      var screen = el('div.pvzx-screen', null, [el('div.pvzx-screen-sky'), el('span.pvzx-screen-zombie'), el('span.pvzx-screen-flower', { text: '🌻' }), el('div.pvzx-screen-sub', { text: subs[0] })]);
       var row = el('div.pvzx-seats', null, [el('div.pvzx-seat-you', { text: '🧑‍🌾' }), el('div.pvzx-seat-bucket', { text: '🍿' }), el('div.pvzx-seat-her', null, [plantImg(p)])]);
       var acts = el('div.pvzx-movie-acts');
       area.appendChild(screen);
       area.appendChild(row);
       area.appendChild(acts);
       var sub = screen.querySelector('.pvzx-screen-sub');
+      if (I.zombieArt) I.zombieArt('tutorial', screen.querySelector('.pvzx-screen-zombie'));
       var her = row.querySelector('.pvzx-seat-her');
       var t0 = Date.now();
       var moments = [
@@ -166,6 +167,7 @@
       }
 
       function scare() {
+        if (I.sfx) I.sfx('playAwooga');
         screen.classList.add('pvzx-screen-scare');
         area.classList.add('pvzx-a-shake');
         setTimeout(function () {
@@ -660,4 +662,321 @@
     // While a wave is in, the sliding floor jitters (read by the CSS).
     void waving;
   };
+  /* ------------------------------------------------------- aquarium */
+
+  // Fish swim by in three lanes: tap the ones that match the sign (it
+  // changes), not the other fish, and never a jellyfish.
+  var FISH = ['🐠', '🐟', '🐡', '🦑', '🦐'];
+  G.fish = function (area, p, done, ctx) {
+    var F = SC.fish;
+    area.classList.add('pvzx-tank');
+    var sign = el('div.pvzx-fish-sign');
+    var label = el('div.pvzx-game-score', { text: L(SC.ui.score, { n: 0 }) });
+    area.appendChild(label);
+    area.appendChild(sign);
+    var score = 0;
+    var target = pick(FISH);
+    var end = Date.now() + 15000;
+    var fishes = [];
+    var lastSpawn = 0;
+    var lastSign = Date.now();
+    function setSign() {
+      sign.textContent = L(F.sign, { fish: target });
+    }
+    setSign();
+    var prev = performance.now();
+    (function frame(now) {
+      if (!alive(area)) return;
+      var dt = Math.min(0.05, (now - prev) / 1000);
+      prev = now;
+      var w = area.clientWidth || 300;
+      var h = area.clientHeight || 300;
+      if (Date.now() - lastSign > 4000) {
+        lastSign = Date.now();
+        target = pick(FISH.filter(function (x) {
+          return x !== target;
+        }));
+        setSign();
+      }
+      if (now - lastSpawn > 520 && Date.now() < end) {
+        lastSpawn = now;
+        var lane = Math.floor(Math.random() * 3);
+        var dir = Math.random() < 0.5 ? 1 : -1;
+        var r = Math.random();
+        var kind = r < 0.38 ? target : r < 0.52 ? '🪼' : pick(FISH);
+        var f = { kind: kind, dir: dir, x: dir > 0 ? -50 : w + 10, y: h * (0.3 + lane * 0.2), speed: 70 + Math.random() * 70 };
+        f.node = el('button.pvzx-fish' + (dir > 0 ? '.pvzx-flip' : ''), { text: kind });
+        f.node.addEventListener('pointerdown', function (e) {
+          e.preventDefault();
+          if (f.gone) return;
+          f.gone = true;
+          if (f.kind === '🪼') {
+            score -= 3;
+            pop(area, L(F.jelly), 'pvzx-pop-bad');
+            if (I.sfx) I.sfx('playZombieShock');
+          } else if (f.kind === target) {
+            score += 2;
+            if (I.sfx) I.sfx('playWaterSplash');
+            if (score % 6 === 0) pop(area, L(F.seen), 'pvzx-pop-love');
+          } else score -= 1;
+          label.textContent = L(SC.ui.score, { n: Math.max(0, score) });
+          f.node.classList.add('pvzx-pop');
+          setTimeout(function () {
+            f.node.remove();
+          }, 200);
+        });
+        area.appendChild(f.node);
+        fishes.push(f);
+      }
+      fishes.forEach(function (f) {
+        if (f.gone) return;
+        f.x += f.dir * f.speed * dt;
+        f.node.style.left = f.x + 'px';
+        f.node.style.top = f.y + Math.sin(now / 300 + f.x / 40) * 6 + 'px';
+        if (f.x < -60 || f.x > w + 20) {
+          f.gone = true;
+          f.node.remove();
+        }
+      });
+      if (Date.now() >= end) return done(clamp(score));
+      requestAnimationFrame(frame);
+    })(prev);
+  };
+
+  /* ------------------------------------------------------- festival */
+
+  // Six rockets rise to a glow that moves each time: tap when the rocket is
+  // in it for a perfect burst.
+  G.fireworks = function (area, p, done, ctx) {
+    var FW = SC.fireworks;
+    area.classList.add('pvzx-night');
+    var label = el('div.pvzx-game-score', { text: '🎆 0/6' });
+    var glow = el('div.pvzx-fw-glow');
+    var rocket = el('div.pvzx-rocket', { text: '🚀' });
+    var her = el('div.pvzx-fw-her', null, [plantImg(p)]);
+    area.appendChild(label);
+    area.appendChild(glow);
+    area.appendChild(rocket);
+    area.appendChild(her);
+    var shot = 0;
+    var pts = 0;
+    var cur = null;
+    function launch() {
+      if (!alive(area)) return;
+      if (shot >= 6) return done(clamp(pts));
+      var h = area.clientHeight || 300;
+      var w = area.clientWidth || 300;
+      cur = { y: h - 40, x: w * (0.25 + Math.random() * 0.5), target: h * (0.14 + Math.random() * 0.2), speed: 170 + shot * 30, live: true };
+      glow.style.top = cur.target - 22 + 'px';
+      glow.style.left = cur.x - 22 + 'px';
+      rocket.style.left = cur.x - 14 + 'px';
+      rocket.style.display = '';
+      if (I.sfx) I.sfx('playPowerToss');
+    }
+    function burst(x, y, perfect) {
+      var colors = ['#ff5fa2', '#ffd84d', '#6fe3ff', '#9dff7a', '#c88bff'];
+      for (var i = 0; i < (perfect ? 22 : 10); i++) {
+        var sp = el('span.pvzx-spark');
+        var a = (i / (perfect ? 22 : 10)) * Math.PI * 2;
+        var d = perfect ? 70 + Math.random() * 30 : 35;
+        sp.style.left = x + 'px';
+        sp.style.top = y + 'px';
+        sp.style.background = colors[i % colors.length];
+        sp.style.setProperty('--dx', Math.cos(a) * d + 'px');
+        sp.style.setProperty('--dy', Math.sin(a) * d + 'px');
+        area.appendChild(sp);
+        (function (n) {
+          setTimeout(function () {
+            n.remove();
+          }, 1100);
+        })(sp);
+      }
+      if (I.sfx) I.sfx(perfect ? 'playExplosion' : 'playBirdExpl');
+    }
+    function resolve(kind) {
+      if (!cur || !cur.live) return;
+      cur.live = false;
+      rocket.style.display = 'none';
+      shot++;
+      label.textContent = '🎆 ' + shot + '/6';
+      if (kind === 'perfect') {
+        pts += 4;
+        burst(cur.x, cur.y, true);
+        pop(area, L(FW.perfect), 'pvzx-pop-love');
+        if (shot % 2 === 0) ctx && ctx.say && ctx.say(I.Lp(FW.wow));
+        her.classList.remove('pvzx-a-happy');
+        void her.offsetWidth;
+        her.classList.add('pvzx-a-happy');
+      } else if (kind === 'good') {
+        pts += 2;
+        burst(cur.x, cur.y, false);
+      } else pop(area, L(kind === 'early' ? FW.early : FW.late), 'pvzx-pop-bad');
+      setTimeout(launch, 900);
+    }
+    var tap = btn('pvzx-tap', '🎆', function () {
+      if (!cur || !cur.live) return;
+      var d = Math.abs(cur.y - cur.target);
+      resolve(d <= 14 ? 'perfect' : d <= 34 ? 'good' : cur.y > cur.target ? 'early' : 'late');
+    });
+    area.appendChild(tap);
+    launch();
+    var prev = performance.now();
+    (function frame(now) {
+      if (!alive(area) || shot >= 6) return;
+      var dt = Math.min(0.05, (now - prev) / 1000);
+      prev = now;
+      if (cur && cur.live) {
+        cur.y -= cur.speed * dt;
+        rocket.style.top = cur.y - 14 + 'px';
+        if (cur.y < cur.target - 40) resolve('late');
+      }
+      requestAnimationFrame(frame);
+    })(prev);
+  };
+
+  /* --------------------------------------------------------- museum */
+
+  // Paintings of plants, blurred, that sharpen with time: pick the name
+  // before she guesses it (8 s). Faster is worth more.
+  G.museum = function (area, p, done, ctx) {
+    var MU = SC.museum;
+    var codes = shuffle(MP.allPlants().filter(function (c) {
+      return c !== p.code;
+    }));
+    var round = 0;
+    var pts = 0;
+    var box = el('div.pvzx-quiz.pvzx-museum');
+    area.appendChild(box);
+    function art(code) {
+      var cv = MP.cards && MP.cards.plantCanvas && MP.cards.plantCanvas(code);
+      return cv ? cv.toDataURL() : null;
+    }
+    (function play() {
+      if (!alive(area)) return;
+      if (round >= 4) return done(clamp(pts));
+      var choice = [];
+      while (codes.length && choice.length < 4) {
+        var c = codes.shift();
+        if (choice.indexOf(c) < 0) choice.push(c);
+      }
+      var right = choice[0];
+      var src = art(right);
+      if (!src) {
+        round++;
+        return play();
+      }
+      round++;
+      var img = el('img.pvzx-painting', { src: src, alt: '' });
+      var frame = el('div.pvzx-frame', null, [img]);
+      var t0 = Date.now();
+      var over = false;
+      var finishRound = function (ok, she) {
+        if (over) return;
+        over = true;
+        clearInterval(clear);
+        img.style.filter = 'none';
+        box.querySelectorAll('.pvzx-chat-opt').forEach(function (b) {
+          b.disabled = true;
+          if (b.dataset.code === right) b.classList.add('pvzx-right');
+        });
+        var name = X.plantName(right);
+        if (ok) {
+          var secs = (Date.now() - t0) / 1000;
+          pts += secs < 2.5 ? 5 : secs < 5 ? 4 : 3;
+          pop(area, L(MU.right), 'pvzx-pop-love');
+          if (I.sfx) I.sfx('playRhythmHit');
+        } else if (she) {
+          pts += 1;
+          ctx && ctx.say && ctx.say(L(MU.sheFirst, { plant: name }));
+        } else {
+          pts -= 1;
+          pop(area, L(MU.wrong, { plant: name }), 'pvzx-pop-bad');
+        }
+        setTimeout(play, 1300);
+      };
+      var opts = shuffle(choice.slice()).map(function (c) {
+        var b = btn('pvzx-chat-opt', X.plantName(c), function () {
+          finishRound(c === right, false);
+        });
+        b.dataset.code = c;
+        return b;
+      });
+      box.replaceChildren(el('b', { text: L(MU.ask, { n: round }) }), frame, el('div.pvzx-quiz-opts', null, opts));
+      var blur = 14;
+      img.style.filter = 'blur(' + blur + 'px) grayscale(1)';
+      var clear = setInterval(function () {
+        if (!alive(area)) return clearInterval(clear);
+        blur = Math.max(0, blur - 1.6);
+        img.style.filter = 'blur(' + blur.toFixed(1) + 'px) grayscale(' + (blur / 14).toFixed(2) + ')';
+        if (Date.now() - t0 > 8000) finishRound(false, true);
+      }, 400);
+    })();
+  };
+
+  /* ----------------------------------------------------------- trip */
+
+  // A memory game with souvenirs of the worlds: find the 6 pairs in 25 s.
+  G.souvenir = function (area, p, done, ctx) {
+    var SV = SC.souvenir;
+    var icons = shuffle(
+      Object.keys(SC.worlds || {}).map(function (k) {
+        return SC.worlds[k].souvenir;
+      }).concat(['📸', '🧳', '🗺', '🎫']),
+    ).slice(0, 6);
+    var w = ctx && ctx.s && ctx.s.world;
+    if (w && icons.indexOf(w.souvenir) < 0) icons[0] = w.souvenir;
+    var deck = shuffle(icons.concat(icons));
+    var label = el('div.pvzx-game-score', { text: L(SV.pairs, { n: 0 }) });
+    var grid = el('div.pvzx-memory');
+    area.appendChild(label);
+    area.appendChild(grid);
+    var open = [];
+    var pairs = 0;
+    var busy = false;
+    var end = Date.now() + 25000;
+    var finished = false;
+    function finish() {
+      if (finished || !alive(area)) return;
+      finished = true;
+      var left = Math.max(0, (end - Date.now()) / 1000);
+      done(clamp(pairs * 3 - 2 + (pairs === 6 ? Math.min(4, Math.round(left / 4)) : 0)));
+    }
+    deck.forEach(function (icon) {
+      var card = btn('pvzx-memcard', '', function () {
+        if (busy || finished || card.classList.contains('pvzx-open') || card.classList.contains('pvzx-done')) return;
+        card.classList.add('pvzx-open');
+        card.textContent = icon;
+        open.push(card);
+        if (open.length < 2) return;
+        busy = true;
+        var a = open[0];
+        var b = open[1];
+        open = [];
+        if (a.textContent === b.textContent) {
+          a.classList.add('pvzx-done');
+          b.classList.add('pvzx-done');
+          pairs++;
+          label.textContent = L(SV.pairs, { n: pairs });
+          if (I.sfx) I.sfx('playBeghouledMatch');
+          if (pairs === 3) ctx && ctx.say && ctx.say(I.Lp(SV.found));
+          busy = false;
+          if (pairs === 6) setTimeout(finish, 500);
+        } else {
+          if (I.sfx) I.sfx('playBeghouledMatchFail');
+          setTimeout(function () {
+            [a, b].forEach(function (c) {
+              c.classList.remove('pvzx-open');
+              c.textContent = '';
+            });
+            busy = false;
+          }, 650);
+        }
+      });
+      grid.appendChild(card);
+    });
+    var timer = el('div.pvzx-timer', null, [el('i', { style: 'animation-duration:25000ms' })]);
+    area.appendChild(timer);
+    setTimeout(finish, 25000);
+  };
+
 })();
